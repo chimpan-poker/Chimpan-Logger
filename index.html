@@ -36,13 +36,17 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 .row input[type="number"]{-moz-appearance:textfield}
 .row input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
 .row select{background:var(--card);color:var(--text)}
+.hero-save-btn{flex:0 0 auto;background:none;border:1px solid var(--border);border-radius:5px;padding:2px 5px;font-size:14px;cursor:pointer;line-height:1;color:var(--text)}
+.hero-save-btn:active{background:rgba(240,216,48,.2)}
 
 /* compact grid rows */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:2px 0}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:2px 0}
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin:2px 0}
 .g5{display:grid;grid-template-columns:3fr 4fr 4fr 4fr 7fr;gap:3px;margin:2px 0}
-.g5b{display:grid;grid-template-columns:5fr 4fr 4fr 4fr 5fr;gap:3px;margin:2px 0}
+.g5b-labels{display:grid;grid-template-columns:5fr 4fr 4fr 4fr 5fr;gap:3px;margin:0 0 1px 0}
+.g5b-labels span{font-size:10px;color:var(--dim);font-weight:600;text-align:center}
+.g5b{display:grid;grid-template-columns:5fr 4fr 4fr 4fr 5fr;gap:3px;margin:0}
 .g2 .row,.g3 .row,.g4 .row,.g5 .row,.g5b .row{margin:0;min-width:0}
 
 /* card slots — single row layout */
@@ -129,15 +133,18 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 <div class="sec">
   <div class="sec-title">Hand / Blind</div>
   <input type="hidden" id="heroSeat" value="1">
+  <div class="g5b-labels">
+    <span>Hand #</span><span>SB</span><span>BB</span><span>Ante</span><span></span>
+  </div>
   <div class="g5b">
-    <div class="row"><label>Hand #</label><input type="number" id="handNum" value="1" min="1" max="99" inputmode="numeric"></div>
-    <div class="row"><label>SB</label><input type="number" id="sb" value="50" inputmode="numeric"></div>
-    <div class="row"><label>BB</label><input type="number" id="bb" value="100" inputmode="numeric"></div>
-    <div class="row"><label>Ante</label><input type="number" id="ante" value="0" inputmode="numeric"></div>
+    <div class="row"><input type="number" id="handNum" value="1" min="1" max="99" inputmode="numeric"></div>
+    <div class="row"><input type="number" id="sb" value="50" inputmode="numeric"></div>
+    <div class="row"><input type="number" id="bb" value="100" inputmode="numeric"></div>
+    <div class="row"><input type="number" id="ante" value="0" inputmode="numeric"></div>
     <div class="row"><select id="blindPreset" onchange="applyBlindPreset()"><option value="">---</option><option value="1/2">1/2</option><option value="1/3">1/3</option><option value="2/3">2/3</option><option value="2/5">2/5</option><option value="5/5">5/5</option><option value="10/20">10/20</option><option value="25/50">25/50</option><option value="50/100" selected>50/100</option><option value="100/200">100/200</option><option value="200/300">200/300</option><option value="200/400">200/400</option><option value="200/500">200/500</option><option value="300/500">300/500</option><option value="400/800">400/800</option><option value="500/1000">500/1000</option></select></div>
   </div>
   <div class="g2">
-    <div class="row"><label>Hero</label><input type="text" id="heroName" value="チンパン" oninput="syncHeroName()"></div>
+    <div class="row"><label>Hero</label><input type="text" id="heroName" value="チンパン" oninput="syncHeroName()"><button class="hero-save-btn" onclick="saveDefaultHero()" title="デフォルト名として保存">&#x1F4BE;</button></div>
     <div class="row"><label>Stack</label><input type="number" id="heroStack" value="50000" inputmode="numeric"></div>
   </div>
 </div>
@@ -377,7 +384,7 @@ function setBtn(seatNum) {
 
 function setHero(seatNum) {
   if (removedSeats.has(seatNum)) return;
-  var heroNameVal = document.getElementById('heroName').value || 'チンパン';
+  var heroNameVal = document.getElementById('heroName').value || localStorage.getItem('pokerDefaultHero') || 'Hero';
   var prevSeat = parseInt(document.getElementById('heroSeat').value) || 0;
   // 前のHero席の名前がheroNameと同じなら「プレイヤー」に戻す
   if (prevSeat && prevSeat !== seatNum) {
@@ -550,7 +557,7 @@ function generate() {
   ta.value = text;
   document.getElementById('outputWrap').classList.add('show');
   document.getElementById('outputWrap').scrollIntoView({behavior:'smooth'});
-  setTimeout(function(){ ta.focus(); ta.setSelectionRange(text.length, text.length); }, 300);
+  setTimeout(function(){ ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0; }, 300);
 
   // 次ハンド準備: Hand#+1, カードクリア
   var nextHn = parseInt(document.getElementById('handNum').value || '1') + 1;
@@ -628,7 +635,20 @@ function setupActions() {
   row.innerHTML = html;
 }
 
+function saveDefaultHero(){
+  var name=document.getElementById('heroName').value.trim();
+  if(!name){alert('名前を入力してください');return}
+  localStorage.setItem('pokerDefaultHero',name);
+  var btn=document.querySelector('.hero-save-btn');
+  btn.textContent='\u2705';setTimeout(function(){btn.innerHTML='\uD83D\uDCBE'},800);
+}
+function loadDefaultHero(){
+  var saved=localStorage.getItem('pokerDefaultHero');
+  if(saved){document.getElementById('heroName').value=saved;syncHeroName()}
+}
+
 // ---- init ----
+loadDefaultHero();
 buildPicker();
 renderAllSlots();
 buildPlayerList();
@@ -665,10 +685,15 @@ function resizeManualFrame(){
   var f=document.getElementById('manualFrame');
   try{
     var doc=f.contentDocument;
-    f.style.height='0';
-    setTimeout(function(){
-      f.style.height=doc.documentElement.scrollHeight+'px';
-    },0);
+    var scrollY=window.scrollY;
+    var rect=f.getBoundingClientRect();
+    var oldH=f.offsetHeight;
+    f.style.height=doc.documentElement.scrollHeight+'px';
+    var newH=f.offsetHeight;
+    var diff=newH-oldH;
+    if(diff!==0&&rect.top<0){
+      window.scrollTo(0,scrollY+diff);
+    }
   }catch(e){f.style.height='400px'}
 }
 </script>

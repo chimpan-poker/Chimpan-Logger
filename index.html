@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Poker Log">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>Chimpan's Logger</title>
+<style>
+:root {
+  --bg:#1a1a2e; --card:#252540; --border:#3a3a5c; --text:#e8e8f0;
+  --accent:#f0d830; --dim:#8888aa; --pink:#ff69b4; --yellow:#f0d830;
+  --mint:#2ecc71; --coral:#e74c3c; --gold:#f39c12;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;background:var(--bg);color:var(--text);padding:0 0 24px;-webkit-tap-highlight-color:transparent}
+header{background:linear-gradient(135deg,#2a2a10,#3a3010,#2a2a10);padding:5px 12px;text-align:center;border-bottom:2px solid var(--yellow)}
+header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-spacing:.03em}
+.wrap{max-width:480px;margin:0 auto;padding:0 6px}
+
+/* section */
+.sec{background:var(--card);border:2px solid rgba(240,216,48,.25);border-radius:7px;margin:4px 0;padding:5px 8px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.sec-title{font-size:10px;font-weight:800;color:var(--yellow);margin-bottom:2px;letter-spacing:.02em}
+
+/* inputs */
+.row{display:flex;gap:4px;margin:2px 0;align-items:center}
+.row label{font-size:11px;color:var(--dim);min-width:0;font-weight:600;flex-shrink:0}
+.row input,.row select{flex:1;border:1px solid var(--border);border-radius:5px;padding:5px 4px;font-size:14px;background:#1a1a2e;color:var(--text);font-family:inherit;min-width:0}
+.row input:focus,.row select:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 2px rgba(240,216,48,.25)}
+.row input[type="number"]{-moz-appearance:textfield}
+.row input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
+.row select{background:var(--card);color:var(--text)}
+
+/* compact grid rows */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:2px 0}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:2px 0}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin:2px 0}
+.g5{display:grid;grid-template-columns:3fr 4fr 4fr 4fr 7fr;gap:3px;margin:2px 0}
+.g2 .row,.g3 .row,.g4 .row,.g5 .row{margin:0;min-width:0}
+
+/* card slots — single row layout */
+.cards-labels{display:flex;align-items:center;gap:0;margin-bottom:1px}
+.cards-labels span{flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--dim)}
+.cards-labels .label-sep{flex:0 0 14px}
+.cards-row{display:flex;gap:3px;align-items:center;margin:3px 0}
+.slot-divider{flex:0 0 2px;height:36px;background:var(--border);border-radius:1px;margin:0 4px}
+.card-slot{flex:1;height:32px;border:2px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:monospace;background:var(--bg);cursor:pointer;position:relative;transition:border-color .15s}
+.card-slot.active-target{border-color:#786c18;background:rgba(120,108,24,.12)}
+.card-slot.filled{border-style:solid;border-color:#786c18;background:#2a2a18}
+.card-slot.filled.s,.card-slot.filled.c{color:#e0e0e0}
+.card-slot.filled.h,.card-slot.filled.d{color:#ff4060}
+.card-slot .x{position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--coral);color:#fff;border-radius:50%;font-size:9px;line-height:14px;text-align:center;font-weight:700;display:none}
+.card-slot.filled .x{display:block}
+
+/* card picker */
+.picker{background:#1e1e36;border:1px solid var(--border);border-radius:6px;padding:4px 5px;margin:4px 0}
+.picker-label{font-size:9px;color:var(--dim);margin-bottom:1px;font-weight:600}
+.rank-row,.suit-row{display:flex;flex-wrap:wrap;gap:2px;margin:1px 0}
+.rank-btn,.suit-btn{border:1px solid var(--border);border-radius:4px;padding:4px 0;font-size:14px;font-weight:700;font-family:monospace;cursor:pointer;text-align:center;background:var(--card);color:var(--text);transition:all .12s}
+.rank-btn{flex:0 0 calc((100% - 8px)/5);min-width:0;padding:6px 0;font-size:16px}
+.rank-btn.t-btn{font-size:14px}
+.suit-btn{flex:1;padding:6px 0;font-size:18px}
+.rank-btn:active,.suit-btn:active{transform:scale(.93)}
+.rank-btn.used{opacity:.2;pointer-events:none}
+.suit-btn.used{opacity:.2;pointer-events:none}
+.rank-btn.sel{background:var(--yellow);color:#1a1a1a;border-color:#d0c020}
+.suit-s{color:#e0e0e0}.suit-h{color:#ff4060}.suit-d{color:#ff4060}.suit-c{color:#e0e0e0}
+.suit-btn.s-s{border-color:#888}.suit-btn.s-h{border-color:#ff4060}.suit-btn.s-d{border-color:#ff4060}.suit-btn.s-c{border-color:#888}
+
+/* player list */
+.pl-row{display:flex;gap:3px;margin:2px 0;align-items:center}
+.pl-row .d-tap{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:9px;font-weight:800;color:transparent;border-radius:50%;line-height:1;padding-top:1px}
+.pl-row .d-tap:active{transform:scale(.9)}
+.pl-row .d-tap.is-btn{background:#e0e0e0;color:#1a1a1a}
+.pl-row .seat-badge{display:flex;align-items:center;justify-content:center;width:24px;flex-shrink:0;cursor:pointer}
+.pl-row .seat-badge:active{transform:scale(.9)}
+.pl-row .seat-badge .seat-num{font-size:12px;font-weight:700;color:var(--dim);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid transparent;line-height:1;padding-top:1px}
+.pl-row:not(.inactive):not(.is-hero) .seat-badge .seat-num{background:#80355a;color:#fff;border-color:#80355a}
+.pl-row.is-hero .seat-badge .seat-num{background:#786c18;color:#fff;border-color:#786c18}
+.pl-row input.name-in{flex:1;height:30px;padding:0 6px;font-size:14px;border:2px solid #80355a;border-radius:5px;background:#1a1a1a;color:#fff;font-family:inherit;font-weight:600}
+.pl-row input.name-in:focus{outline:none;border-color:#80355a;box-shadow:0 0 0 2px rgba(128,53,90,.3)}
+.pl-row.is-hero input.name-in{border-color:#786c18}
+.pl-row.is-hero input.name-in:focus{border-color:#786c18;box-shadow:0 0 0 2px rgba(120,108,24,.3)}
+.pl-row .rm-btn{width:22px;height:22px;border:none;background:var(--border);color:var(--dim);border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:22px;text-align:center}
+.pl-row.inactive{opacity:.3}
+.pl-row.inactive .seat-badge{margin-right:20px}
+.pl-row.inactive input.name-in{pointer-events:none}
+.pl-row.inactive .rm-btn{background:#555}
+.pl-row.is-hero{background:linear-gradient(90deg,rgba(240,216,48,.1),transparent);border-radius:5px}
+.utg-hint{font-size:9px;color:var(--dim);font-weight:400;margin-left:6px}
+
+
+/* generate */
+.gen-btn{display:block;width:44%;margin:6px auto 4px;padding:8px;border:none;border-radius:7px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(135deg,#a09018,#b8a820,#a09018);box-shadow:0 3px 10px rgba(0,0,0,.4);letter-spacing:.04em}
+.gen-btn:active{transform:scale(.97)}
+
+/* output */
+.output-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin:6px 0;display:none}
+.output-wrap.show{display:block}
+.output-label{font-size:10px;color:var(--yellow);font-weight:600;margin-bottom:2px}
+.output-text{width:100%;min-height:180px;border:1px solid var(--border);border-radius:5px;padding:6px;font-size:14px;font-family:"SFMono-Regular",Consolas,monospace;color:var(--text);background:var(--bg);resize:vertical;line-height:1.5;-webkit-user-select:text;user-select:text;-webkit-appearance:none;cursor:text}
+.output-text:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 2px rgba(240,216,48,.25)}
+.copy-row{display:flex;gap:5px;margin-top:4px}
+.copy-row{justify-content:center}
+.copy-btn,.save-btn,.share-btn{flex:0 0 calc(33% - 3px);padding:8px;border:none;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#a09018,#b8a820,#a09018);color:#fff}
+.copy-btn{}
+.share-btn{}
+.copy-btn:active,.save-btn:active,.share-btn:active{transform:scale(.97)}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#fff;color:#1a1a2e;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chimpan's Logger</h1>
+</header>
+
+<div class="wrap">
+
+<!-- ===== Hand / Blind / Hero 統合 ===== -->
+<div class="sec">
+  <div class="sec-title">Hand / Blind</div>
+  <input type="hidden" id="heroSeat" value="1">
+  <div class="g5">
+    <div class="row"><label>#</label><input type="number" id="handNum" value="1" min="1" max="99" inputmode="numeric"></div>
+    <div class="row"><label>SB</label><input type="number" id="sb" value="200" inputmode="numeric"></div>
+    <div class="row"><label>BB</label><input type="number" id="bb" value="400" inputmode="numeric"></div>
+    <div class="row"><label>A</label><input type="number" id="ante" value="0" inputmode="numeric"></div>
+    <div class="row"><label>St</label><input type="number" id="heroStack" value="50000" inputmode="numeric"></div>
+  </div>
+</div>
+
+<!-- ===== Cards 統合 ===== -->
+<div class="sec">
+  <div class="sec-title">Cards</div>
+
+  <!-- Labels: Hero(2) | Board(5) -->
+  <div class="cards-labels">
+    <span>Hero</span><span>Hero</span>
+    <span class="label-sep"></span>
+    <span>Flop</span><span>Flop</span><span>Flop</span><span>Turn</span><span>River</span>
+  </div>
+  <!-- All 7 slots in one row -->
+  <div class="cards-row">
+    <div class="card-slot" id="heroSlot0" onclick="onSlotClick(event,'heroCards',0)"></div>
+    <div class="card-slot" id="heroSlot1" onclick="onSlotClick(event,'heroCards',1)"></div>
+    <div class="slot-divider"></div>
+    <div class="card-slot" id="boardSlot0" onclick="onSlotClick(event,'boardCards',0)"></div>
+    <div class="card-slot" id="boardSlot1" onclick="onSlotClick(event,'boardCards',1)"></div>
+    <div class="card-slot" id="boardSlot2" onclick="onSlotClick(event,'boardCards',2)"></div>
+    <div class="card-slot" id="boardSlot3" onclick="onSlotClick(event,'boardCards',3)"></div>
+    <div class="card-slot" id="boardSlot4" onclick="onSlotClick(event,'boardCards',4)"></div>
+  </div>
+
+  <!-- Shared picker -->
+  <div class="picker" id="sharedPicker"></div>
+</div>
+
+<!-- ===== プレイヤー一覧 ===== -->
+<div class="sec">
+  <div class="sec-title">Players <span class="utg-hint">D=BTN / 番号=Hero</span></div>
+  <div id="playerList"></div>
+</div>
+
+
+<!-- ===== 生成 ===== -->
+<button class="gen-btn" onclick="generate()">テンプレート生成</button>
+
+<!-- ===== 出力 ===== -->
+<div class="output-wrap" id="outputWrap">
+  <div class="output-label">&#9998; 編集可 &mdash; アクションを追記してください</div>
+  <textarea class="output-text" id="outputText"></textarea>
+  <div class="copy-row" id="actionRow"></div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var RANK_ROWS = [['A','2','3','4','5'],['6','7','8','9','T'],['J','Q','K']];
+var RANKS = RANK_ROWS.reduce(function(a,b){return a.concat(b)},[]);
+var SUITS = [{k:'s',sym:'\u2660',cls:'suit-s'},{k:'c',sym:'\u2663',cls:'suit-c'},{k:'h',sym:'\u2665',cls:'suit-h'},{k:'d',sym:'\u2666',cls:'suit-d'}];
+var allUsed = new Set();
+var cardData = {
+  heroCards: {cards:[], max:2},
+  boardCards: {cards:[], max:5}
+};
+var activeTarget = 'heroCards';
+var selRank = null;
+
+// ---- picker ----
+function buildPicker() {
+  var picker = document.getElementById('sharedPicker');
+  var html = '<div class="picker-label">Rank</div>';
+  RANK_ROWS.forEach(function(row) {
+    html += '<div class="rank-row">';
+    row.forEach(function(r) {
+      var cls = r === 'T' ? 'rank-btn t-btn' : 'rank-btn';
+      var display = r === 'T' ? '10' : r;
+      html += '<button class="'+cls+'" data-rank="'+r+'" onclick="pickRank(\''+r+'\',this)">'+display+'</button>';
+    });
+    html += '</div>';
+  });
+  html += '<div class="picker-label" style="margin-top:3px">Suit</div><div class="suit-row">';
+  SUITS.forEach(function(s) {
+    html += '<button class="suit-btn s-'+s.k+' '+s.cls+'" data-suit="'+s.k+'" onclick="pickSuit(\''+s.k+'\')">'+s.sym+'</button>';
+  });
+  html += '</div>';
+  picker.innerHTML = html;
+}
+
+function pickRank(rank, btn) {
+  var picker = document.getElementById('sharedPicker');
+  picker.querySelectorAll('.rank-btn').forEach(function(b){b.classList.remove('sel')});
+  btn.classList.add('sel');
+  selRank = rank;
+  refreshUsed();
+}
+
+function pickSuit(suit) {
+  if (!selRank) return;
+  var st = cardData[activeTarget];
+  if (st.cards.length >= st.max) return;
+
+  var card = selRank + suit;
+  var cardUpper = card.toUpperCase();
+  if (allUsed.has(cardUpper)) return;
+
+  st.cards.push(card);
+  allUsed.add(cardUpper);
+  selRank = null;
+
+  var picker = document.getElementById('sharedPicker');
+  picker.querySelectorAll('.rank-btn').forEach(function(b){b.classList.remove('sel')});
+
+  renderAllSlots();
+  refreshUsed();
+
+  // auto-switch: hero full → board
+  if (activeTarget === 'heroCards' && st.cards.length >= st.max) {
+    setTarget('boardCards');
+  }
+}
+
+function removeSlotCard(target, idx) {
+  var st = cardData[target];
+  if (!st.cards[idx]) return;
+  var removed = st.cards.splice(idx, 1)[0];
+  allUsed.delete(removed.toUpperCase());
+  renderAllSlots();
+  refreshUsed();
+  setTarget(target);
+}
+
+function onSlotClick(e, target, idx) {
+  e.stopPropagation();
+  var st = cardData[target];
+  if (st.cards[idx]) {
+    removeSlotCard(target, idx);
+  } else {
+    setTarget(target);
+  }
+}
+
+function setTarget(target) {
+  activeTarget = target;
+  selRank = null;
+  var picker = document.getElementById('sharedPicker');
+  picker.querySelectorAll('.rank-btn').forEach(function(b){b.classList.remove('sel')});
+  // highlight empty slots of active target
+  document.querySelectorAll('.card-slot').forEach(function(el){el.classList.remove('active-target')});
+  var prefix = target === 'heroCards' ? 'heroSlot' : 'boardSlot';
+  var max = cardData[target].max;
+  for (var i = 0; i < max; i++) {
+    var el = document.getElementById(prefix + i);
+    if (!cardData[target].cards[i]) el.classList.add('active-target');
+  }
+  refreshUsed();
+}
+
+function refreshUsed() {
+  var picker = document.getElementById('sharedPicker');
+  picker.querySelectorAll('.rank-btn').forEach(function(rb) {
+    var rank = rb.dataset.rank;
+    var anyAvail = SUITS.some(function(s){return !allUsed.has((rank+s.k).toUpperCase())});
+    rb.classList.toggle('used', !anyAvail);
+  });
+  picker.querySelectorAll('.suit-btn').forEach(function(sb) {
+    var suit = sb.dataset.suit;
+    if (selRank) {
+      sb.classList.toggle('used', allUsed.has((selRank+suit).toUpperCase()));
+    } else {
+      sb.classList.remove('used');
+    }
+  });
+}
+
+// ---- slot rendering ----
+function renderAllSlots() {
+  renderSlotRow('heroCards', 'heroSlot', 2);
+  renderSlotRow('boardCards', 'boardSlot', 5);
+  // re-apply active-target highlights
+  var prefix = activeTarget === 'heroCards' ? 'heroSlot' : 'boardSlot';
+  var max = cardData[activeTarget].max;
+  for (var i = 0; i < max; i++) {
+    var el = document.getElementById(prefix + i);
+    if (!cardData[activeTarget].cards[i]) el.classList.add('active-target');
+  }
+}
+
+function renderSlotRow(target, prefix, count) {
+  var st = cardData[target];
+  for (var i = 0; i < count; i++) {
+    var el = document.getElementById(prefix + i);
+    if (st.cards[i]) {
+      var c = st.cards[i];
+      var suit = c.slice(-1);
+      var rank = c.slice(0, -1);
+      var display = rank === 'T' ? '10' : rank;
+      var sym = SUITS.filter(function(s){return s.k===suit})[0].sym;
+      el.className = 'card-slot filled ' + suit;
+      el.innerHTML = display + sym + '<span class="x">&times;</span>';
+    } else {
+      el.className = 'card-slot';
+      el.innerHTML = '';
+    }
+  }
+}
+
+// ---- player list (席順固定) ----
+var removedSeats = new Set();
+var btnSeat = 1;
+
+function buildPlayerList() {
+  var list = document.getElementById('playerList');
+  list.innerHTML = '';
+  for (var i = 1; i <= 10; i++) {
+    var div = document.createElement('div');
+    div.className = 'pl-row';
+    div.id = 'seat-' + i;
+    div.dataset.seat = i;
+    div.innerHTML = '<span class="d-tap" onclick="setBtn(' + i + ')">D</span>' +
+      '<span class="seat-badge" onclick="setHero(' + i + ')"><span class="seat-num">' + i + '</span></span>' +
+      '<input class="name-in" type="text" placeholder="名前" value="プレイヤー">' +
+      '<button class="rm-btn" onclick="toggleSeat(' + i + ')">&times;</button>';
+    list.appendChild(div);
+  }
+  renderBtnMark();
+}
+
+function setBtn(seatNum) {
+  if (removedSeats.has(seatNum)) return;
+  btnSeat = seatNum;
+  renderBtnMark();
+}
+
+function setHero(seatNum) {
+  if (removedSeats.has(seatNum)) return;
+  var prevSeat = parseInt(document.getElementById('heroSeat').value) || 0;
+  // 前のHero席の名前が「チンパン」なら「プレイヤー」に戻す
+  if (prevSeat && prevSeat !== seatNum) {
+    var prevEl = document.getElementById('seat-' + prevSeat);
+    if (prevEl) {
+      var prevInput = prevEl.querySelector('.name-in');
+      if (prevInput.value === 'チンパン') prevInput.value = 'プレイヤー';
+    }
+  }
+  document.getElementById('heroSeat').value = seatNum;
+  // 新しいHero席の名前を「チンパン」に
+  var el = document.getElementById('seat-' + seatNum);
+  if (el) el.querySelector('.name-in').value = 'チンパン';
+  highlightHeroSeat();
+}
+
+function renderBtnMark() {
+  document.querySelectorAll('.pl-row .d-tap').forEach(function(el) {
+    var s = parseInt(el.closest('.pl-row').dataset.seat);
+    el.classList.toggle('is-btn', s === btnSeat);
+  });
+}
+
+function toggleSeat(seatNum) {
+  var el = document.getElementById('seat-' + seatNum);
+  if (!el) return;
+  if (removedSeats.has(seatNum)) {
+    // 復帰
+    el.classList.remove('inactive');
+    removedSeats.delete(seatNum);
+  } else {
+    // 非アクティブ化
+    el.classList.add('inactive');
+    removedSeats.add(seatNum);
+    // BTNの席が非アクティブになったら次の有効席へ移動
+    if (seatNum === btnSeat) {
+      for (var n = 1; n <= 10; n++) {
+        var next = ((btnSeat - 1 + n) % 10) + 1;
+        if (!removedSeats.has(next)) { btnSeat = next; break; }
+      }
+      renderBtnMark();
+    }
+  }
+}
+
+function getActivePlayersUtgOrder() {
+  // BTNの次(SB)から時計回り → SB,BB,UTG,...,BTN の順
+  var players = [];
+  for (var n = 1; n <= 10; n++) {
+    var seat = ((btnSeat - 1 + n) % 10) + 1;
+    if (removedSeats.has(seat)) continue;
+    var el = document.getElementById('seat-' + seat);
+    if (!el) continue;
+    var name = el.querySelector('.name-in').value;
+    if (name) players.push({seat: seat, name: name});
+  }
+  return players;
+}
+
+function highlightHeroSeat() {
+  var hs = parseInt(document.getElementById('heroSeat').value) || 0;
+  document.querySelectorAll('.pl-row').forEach(function(row) {
+    row.classList.toggle('is-hero', parseInt(row.dataset.seat) === hs);
+  });
+}
+
+// ---- generate ----
+function generate() {
+  var hn = (document.getElementById('handNum').value || '1');
+  if (hn.length < 2) hn = '0' + hn;
+  var sb = document.getElementById('sb').value || '0';
+  var bb = document.getElementById('bb').value || '0';
+  var ante = document.getElementById('ante').value || '';
+  var nmax = 10 - removedSeats.size;
+  var heroSeat = document.getElementById('heroSeat').value || '1';
+  var heroStack = document.getElementById('heroStack').value || '0';
+  var heroCards = cardData.heroCards.cards;
+  var heroCardStr = heroCards.map(function(c) {
+    var r = c.slice(0,-1); var s = c.slice(-1);
+    return (r === 'T' ? '10' : r) + s;
+  }).join(' ') || '??';
+
+  var lines = [];
+  lines.push('#' + hn);
+
+  var blindLine = 'sb' + sb + ' bb' + bb;
+  if (ante && ante !== '0') blindLine += ' ante' + ante;
+  lines.push(blindLine);
+
+  lines.push('hero ' + heroSeat + ' ' + heroStack + ' ' + heroCardStr);
+  lines.push(nmax + 'max');
+  lines.push('btn ' + btnSeat);
+
+  lines.push('video ');
+  lines.push('ifb ');
+  lines.push('ifi ');
+
+  lines.push('');
+
+  // players (UTG順)
+  var players = getActivePlayersUtgOrder();
+  players.forEach(function(p) {
+    lines.push(p.seat + ' ' + p.name);
+  });
+
+  lines.push('');
+  lines.push('---pf');
+  lines.push('');
+  lines.push('');
+  lines.push('');
+
+  // board cards (0-2: flop, 3: turn, 4: river)
+  var bc = cardData.boardCards.cards;
+  function fmtCard(c){var r=c.slice(0,-1);return (r==='T'?'10':r)+c.slice(-1)}
+  if (bc.length >= 3) {
+    lines.push('---flop ' + bc.slice(0,3).map(fmtCard).join(' '));
+  } else {
+    lines.push('---flop');
+  }
+  lines.push('');
+  lines.push('');
+  lines.push('');
+
+  if (bc.length >= 4) {
+    lines.push('---turn ' + fmtCard(bc[3]));
+  } else {
+    lines.push('---turn');
+  }
+  lines.push('');
+  lines.push('');
+  lines.push('');
+
+  if (bc.length >= 5) {
+    lines.push('---river ' + fmtCard(bc[4]));
+  } else {
+    lines.push('---river');
+  }
+  lines.push('');
+  lines.push('');
+  lines.push('');
+
+  lines.push('---sd');
+  lines.push('');
+  lines.push('');
+  lines.push('');
+  lines.push('---result');
+  lines.push('');
+  lines.push('');
+  lines.push('');
+  lines.push('#メモ');
+  lines.push('');
+
+  var text = lines.join('\n');
+  var ta = document.getElementById('outputText');
+  ta.value = text;
+  document.getElementById('outputWrap').classList.add('show');
+  document.getElementById('outputWrap').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){ ta.focus(); ta.setSelectionRange(text.length, text.length); }, 300);
+
+  // 次ハンド準備: Hand#+1, カードクリア
+  var nextHn = parseInt(document.getElementById('handNum').value || '1') + 1;
+  document.getElementById('handNum').value = nextHn;
+  cardData.heroCards.cards.forEach(function(c){ allUsed.delete(c.toUpperCase()); });
+  cardData.boardCards.cards.forEach(function(c){ allUsed.delete(c.toUpperCase()); });
+  cardData.heroCards.cards = [];
+  cardData.boardCards.cards = [];
+  activeTarget = 'heroCards';
+  selRank = null;
+  renderAllSlots();
+  refreshUsed();
+  var picker = document.getElementById('sharedPicker');
+  picker.querySelectorAll('.rank-btn').forEach(function(b){b.classList.remove('sel')});
+}
+
+function copyText() {
+  var text = document.getElementById('outputText').value;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function(){showToast('Copied')})['catch'](function(){fallbackCopy()});
+  } else {
+    fallbackCopy();
+  }
+}
+function fallbackCopy() {
+  var ta = document.getElementById('outputText');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try { document.execCommand('copy'); showToast('Copied'); }
+  catch(e) { showToast('Failed'); }
+}
+
+function saveFile() {
+  var text = document.getElementById('outputText').value;
+  var hn = (document.getElementById('handNum').value || '1');
+  if (hn.length < 2) hn = '0' + hn;
+  var blob = new Blob([text.replace(/\n/g,'\r\n')], {type:'text/plain;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hand' + hn + '_memo.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  showToast('Saved');
+}
+
+function shareText() {
+  var text = document.getElementById('outputText').value;
+  if (navigator.share) {
+    navigator.share({title:'Poker Memo', text:text})['catch'](function(){});
+  } else {
+    copyText();
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')}, 1500);
+}
+
+// detect environment & build action buttons
+function setupActions() {
+  var row = document.getElementById('actionRow');
+  var isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+  var canShare = !!navigator.share;
+  var html = '<button class="copy-btn" onclick="copyText()">Copy</button>';
+  if (isMobile && canShare) {
+    html += '<button class="share-btn" onclick="shareText()">Share</button>';
+  } else {
+    html += '<button class="save-btn" onclick="saveFile()">Save (.txt)</button>';
+  }
+  row.innerHTML = html;
+}
+
+// ---- init ----
+buildPicker();
+renderAllSlots();
+buildPlayerList();
+highlightHeroSeat();
+setupActions();
+</script>
+</body>
+</html>

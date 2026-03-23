@@ -3,830 +3,342 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Poker Memo Converter - マニュアル</title>
+<title>Poker Hand Logger - Manual</title>
 <style>
   :root {
-    --bg: #1a1a2e;
-    --card: #252540;
-    --border: #3a3a5c;
-    --text: #e8e8f0;
-    --text-dim: #8888aa;
-    --yellow: #f0d830;
-    --pink: #ff69b4;
-    --mint: #2ecc71;
-    --coral: #e74c3c;
-    --gold: #f39c12;
-    --code-bg: #1e1e36;
-    --code-text: #c8c8e0;
+    --bg: #1a1a2e; --card: #252540; --border: #3a3a5c; --text: #e8e8f0;
+    --dim: #8888aa; --yellow: #f0d830; --pink: #ff69b4; --mint: #2ecc71;
+    --coral: #e74c3c; --gold: #f39c12; --code-bg: #1e1e36; --code-text: #c8c8e0;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
-    background: var(--bg); color: var(--text);
-    line-height: 1.8; padding: 0 0 20px;
-  }
-
-  /* ---- header ---- */
-  header {
-    background: linear-gradient(135deg, #2a2a10, #3a3010, #2a2a10);
-    padding: 5px 12px; text-align: center;
-    border-bottom: 2px solid var(--yellow);
-  }
-  header h1 { font-size: 12px; letter-spacing: .03em; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
-  header h1 span { color: var(--yellow); }
-  header p { color: var(--text-dim); margin-top: 2px; font-size: 10px; }
-
-  /* ---- layout ---- */
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-
-
-  /* ---- sections ---- */
-  section { margin-top: 4px; }
-  h2 {
-    font-size: 14px; color: #fff; padding-bottom: 6px;
-    border-bottom: 2px solid var(--yellow); margin-bottom: 8px;
-  }
-  h2 .num { color: var(--yellow); margin-right: 4px; font-weight: 800; }
-  h3 { font-size: 13px; color: var(--pink); margin: 14px 0 6px; font-weight: 700; }
-  p { margin: 6px 0; }
-
-  /* ---- code / pre ---- */
-  code {
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
-    padding: 2px 7px; font-size: 13.5px; color: var(--yellow); font-weight: 600;
-  }
-  pre {
-    background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.6;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    color: var(--code-text); margin: 12px 0 16px;
-    box-shadow: inset 0 1px 6px rgba(0,0,0,.2);
-  }
-  pre .cm  { color: #6a6a8a; }
-  pre .kw  { color: var(--yellow); font-weight: 700; }
-  pre .sec { color: var(--pink); font-weight: bold; }
-  pre .val { color: var(--mint); font-weight: 700; }
-  pre .act { color: var(--gold); font-weight: 600; }
-
-  /* ---- tables ---- */
-  table {
-    width: 100%; border-collapse: collapse; margin: 12px 0 16px;
-    font-size: 14px; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 1px 6px rgba(0,0,0,.2);
-  }
-  th, td {
-    border: 1px solid var(--border); padding: 9px 13px; text-align: left;
-  }
-  th {
-    background: linear-gradient(135deg, #2a2a50, #35305a);
-    color: var(--yellow); font-weight: 800; white-space: nowrap;
-  }
-  td { background: var(--card); }
-  td code { border: none; background: none; padding: 0; color: var(--yellow); font-weight: 600; }
-  tr:nth-child(even) td { background: #2a2a48; }
-
-  /* ---- tags ---- */
-  .tag {
-    display: inline-block; font-size: 11px; font-weight: 800; border-radius: 12px;
-    padding: 2px 10px; vertical-align: middle; margin-right: 4px;
-  }
-  .tag.required { background: rgba(231,76,60,.2); color: #ff6b6b; border: 1px solid rgba(231,76,60,.4); }
-  .tag.optional { background: rgba(255,105,180,.15); color: var(--pink); border: 1px solid rgba(255,105,180,.3); }
-  .tag.warn     { background: rgba(240,216,48,.15); color: var(--yellow); border: 1px solid rgba(240,216,48,.3); }
-
-  /* ---- note boxes ---- */
-  .note {
-    border-left: 5px solid var(--mint); background: rgba(46,204,113,.08);
-    padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 10px 0;
-    font-size: 14px;
-  }
-  .note.warn  { border-left-color: var(--gold); background: rgba(243,156,18,.08); }
-  .note.error { border-left-color: var(--coral); background: rgba(231,76,60,.08); }
-  .note strong { color: #fff; }
-
-  /* ---- flow ---- */
-  .flow {
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; flex-wrap: wrap; margin: 14px 0;
-  }
-  .flow-step {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 20px; text-align: center; font-size: 14px; min-width: 120px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.2);
-  }
-  .flow-step:nth-child(1) { border-top: 4px solid var(--mint); }
-  .flow-step:nth-child(3) { border-top: 4px solid var(--pink); }
-  .flow-step:nth-child(5) { border-top: 4px solid var(--yellow); }
-  .flow-step:nth-child(7) { border-top: 4px solid var(--gold); }
-  .flow-step strong { color: #fff; display: block; font-size: 13px; font-weight: 700; }
-  .flow-step span { color: var(--text-dim); font-size: 12px; }
-  .flow-arrow { color: var(--yellow); font-size: 22px; font-weight: bold; }
-
-  /* ---- pos grid ---- */
-  .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 12px 0; }
-  .pos-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 12px 16px; font-size: 13px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
-    border-left: 5px solid var(--text-dim);
-  }
-  .pos-card:nth-child(1) { border-left-color: var(--pink); }
-  .pos-card:nth-child(2) { border-left-color: var(--coral); }
-  .pos-card:nth-child(3) { border-left-color: #a855f7; }
-  .pos-card:nth-child(4) { border-left-color: var(--gold); }
-  .pos-card:nth-child(5) { border-left-color: #60a5fa; }
-  .pos-card:nth-child(6) { border-left-color: var(--mint); }
-  .pos-card:nth-child(7) { border-left-color: #a3e635; }
-  .pos-card:nth-child(8) { border-left-color: var(--yellow); }
-  .pos-card:nth-child(9) { border-left-color: var(--pink); }
-  .pos-card .label { color: #fff; font-weight: 800; margin-bottom: 2px; }
-  .pos-card .seats { color: var(--text-dim); font-family: monospace; letter-spacing: .03em; font-weight: 600; }
-
-  ul { padding-left: 20px; margin: 6px 0; }
-  li { margin: 3px 0; }
-
-
-  /* ---- accordion ---- */
-  details { margin: 0; }
-  details summary { cursor: pointer; list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
-  details summary::marker { display: none; }
-  details summary h2 { position: relative; padding-right: 30px; }
-  details summary h2::after {
-    content: "▼"; position: absolute; right: 0; top: 50%;
-    transform: translateY(-50%); font-size: 14px; color: var(--yellow);
-    transition: transform .2s;
-  }
-  details[open] summary h2::after { transform: translateY(-50%) rotate(180deg); }
-  details > :not(summary) { animation: fadeIn .2s ease; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  /* ---- footer ---- */
-  footer { text-align: center; margin-top: 16px; color: var(--text-dim); font-size: 13px; }
-
-  /* ============================================================ */
-  /* モバイル対応 (iPhone 15 Pro: 393px)                          */
-  /* ============================================================ */
-  @media (max-width: 520px) {
-    body { line-height: 1.6; padding: 0 0 10px; }
-    .wrap { padding: 0 10px; }
-
-    /* header */
-    header { padding: 5px 10px; }
-    header h1 { font-size: 11px; }
-    header p { font-size: 9px; margin-top: 1px; }
-
-
-    /* sections */
-    section { margin-top: 2px; }
-    h2 { font-size: 13px; padding-bottom: 4px; margin-bottom: 6px; }
-    h3 { font-size: 12px; margin: 10px 0 4px; }
-    p { margin: 4px 0; font-size: 13.5px; }
-
-    /* code / pre */
-    code { font-size: 12px; padding: 1px 4px; }
-    pre {
-      font-size: 11.5px; padding: 10px 10px; margin: 6px 0 10px;
-      border-radius: 6px; line-height: 1.5;
-    }
-
-    /* tables → カード型レイアウト */
-    table { font-size: 13px; margin: 6px 0 10px; }
-    th, td { padding: 5px 7px; }
-    th { font-size: 12px; }
-
-    /* 4列テーブル → モバイルでカード化 */
-    table.m-card { display: block; border: none; }
-    table.m-card thead { display: none; }
-    table.m-card tbody { display: block; }
-    table.m-card tr {
-      display: block; background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; margin: 6px 0; padding: 8px 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.15);
-    }
-    table.m-card td {
-      display: block; border: none; padding: 1px 0;
-      font-size: 13px;
-    }
-    table.m-card td:first-child {
-      font-weight: 700; color: #fff; font-size: 13.5px;
-      margin-bottom: 2px;
-    }
-    table.m-card td:last-child { text-align: right; }
-    table.m-card td code { font-size: 12px; }
-    table.m-card .tag { font-size: 10px; }
-
-    /* 2列テーブル → そのまま横スクロール不要に */
-    table.m-simple th, table.m-simple td { padding: 5px 8px; font-size: 12.5px; }
-
-    /* tags */
-    .tag { font-size: 10px; padding: 1px 7px; }
-
-    /* note boxes */
-    .note { padding: 8px 10px; font-size: 12.5px; margin: 8px 0; border-radius: 0 6px 6px 0; }
-    .note ul { padding-left: 16px; }
-    .note li { font-size: 12.5px; }
-
-    /* flow → 縦並び */
-    .flow { flex-direction: column; gap: 4px; margin: 12px 0; }
-    .flow-step { min-width: 0; width: 100%; padding: 8px 12px; border-radius: 8px; }
-    .flow-step strong { font-size: 12px; }
-    .flow-step span { font-size: 11px; }
-    .flow-arrow { transform: rotate(90deg); font-size: 16px; }
-
-    /* pos grid → 1列 */
-    .pos-grid { grid-template-columns: 1fr; gap: 6px; margin: 6px 0; }
-    .pos-card { padding: 6px 10px; border-radius: 6px; font-size: 12px; }
-    .pos-card .label { font-size: 13px; }
-    .pos-card .seats { font-size: 11.5px; }
-
-    ul { padding-left: 16px; }
-    li { margin: 1px 0; font-size: 13px; }
-    footer { margin-top: 10px; font-size: 11px; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding:0 0 12px;font-size:13px}
+  header{background:linear-gradient(135deg,#2a2a10,#3a3010,#2a2a10);padding:4px 12px;text-align:center;border-bottom:2px solid var(--yellow)}
+  header h1{font-size:11px;letter-spacing:.03em;color:#fff}
+  header h1 span{color:var(--yellow)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 14px}
+  section{margin-top:2px}
+  h2{font-size:13px;color:#fff;padding-bottom:4px;border-bottom:2px solid var(--yellow);margin-bottom:4px}
+  h2 .num{color:var(--yellow);margin-right:3px;font-weight:800}
+  h3{font-size:12px;color:var(--pink);margin:8px 0 3px;font-weight:700}
+  p{margin:3px 0}
+  code{font-family:"SFMono-Regular",Consolas,monospace;background:var(--code-bg);border:1px solid var(--border);border-radius:3px;padding:1px 4px;font-size:12px;color:var(--yellow);font-weight:600}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow-x:auto;font-size:12px;line-height:1.45;font-family:"SFMono-Regular",Consolas,monospace;color:var(--code-text);margin:4px 0 8px}
+  pre .cm{color:#6a6a8a} pre .kw{color:var(--yellow);font-weight:700} pre .sec{color:var(--pink);font-weight:bold} pre .val{color:var(--mint);font-weight:700} pre .act{color:var(--gold);font-weight:600}
+  table{width:100%;border-collapse:collapse;margin:4px 0 8px;font-size:12.5px;border-radius:6px;overflow:hidden}
+  th,td{border:1px solid var(--border);padding:4px 8px;text-align:left}
+  th{background:linear-gradient(135deg,#2a2a50,#35305a);color:var(--yellow);font-weight:800;white-space:nowrap;font-size:11px}
+  td{background:var(--card)} td code{border:none;background:none;padding:0;color:var(--yellow);font-weight:600}
+  tr:nth-child(even) td{background:#2a2a48}
+  .tag{display:inline-block;font-size:9px;font-weight:800;border-radius:8px;padding:1px 6px;vertical-align:middle;margin-right:2px}
+  .tag.required{background:rgba(231,76,60,.2);color:#ff6b6b;border:1px solid rgba(231,76,60,.4)}
+  .tag.optional{background:rgba(255,105,180,.15);color:var(--pink);border:1px solid rgba(255,105,180,.3)}
+  .note{border-left:4px solid var(--mint);background:rgba(46,204,113,.08);padding:6px 10px;border-radius:0 6px 6px 0;margin:4px 0;font-size:12.5px}
+  .note.warn{border-left-color:var(--gold);background:rgba(243,156,18,.08)}
+  .note strong{color:#fff}
+  .flow-line{display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap}
+  .flow-line .fs{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;white-space:nowrap}
+  .flow-line .fs strong{color:#fff;font-weight:700}
+  .flow-line .fs span{color:var(--dim);margin-left:4px;font-size:11px}
+  .flow-line .fa{color:var(--yellow);font-weight:bold;font-size:14px}
+  .pos-tbl{margin:4px 0 8px}
+  .pos-tbl td:first-child{font-weight:800;color:#fff;width:60px;white-space:nowrap}
+  .pos-tbl td:last-child{font-family:monospace;letter-spacing:.02em;color:var(--dim);font-weight:600}
+  ul{padding-left:16px;margin:3px 0} li{margin:1px 0}
+  details{margin:0}
+  details summary{cursor:pointer;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::marker{display:none}
+  details summary h2{position:relative;padding-right:24px}
+  details summary h2::after{content:"\25BC";position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:12px;color:var(--yellow);transition:transform .2s}
+  details[open] summary h2::after{transform:translateY(-50%) rotate(180deg)}
+  details>:not(summary){animation:fadeIn .15s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  footer{text-align:center;margin-top:10px;color:var(--dim);font-size:11px}
+  @media(max-width:520px){
+    body{font-size:12.5px;padding:0 0 8px}
+    .wrap{padding:0 8px}
+    header{padding:3px 8px} header h1{font-size:10px}
+    h2{font-size:12px;padding-bottom:3px;margin-bottom:3px}
+    h3{font-size:11px;margin:6px 0 2px}
+    code{font-size:11px;padding:1px 3px}
+    pre{font-size:11px;padding:6px 8px;margin:3px 0 6px;line-height:1.4}
+    table{font-size:12px;margin:3px 0 6px}
+    th,td{padding:3px 5px} th{font-size:10.5px}
+    table.m-card{display:block;border:none}
+    table.m-card thead{display:none} table.m-card tbody{display:block}
+    table.m-card tr{display:block;background:var(--card);border:1px solid var(--border);border-radius:6px;margin:4px 0;padding:5px 8px}
+    table.m-card td{display:block;border:none;padding:1px 0;font-size:12px}
+    table.m-card td:first-child{font-weight:700;color:#fff;margin-bottom:1px}
+    .tag{font-size:8px;padding:1px 5px}
+    .note{padding:5px 8px;font-size:12px;margin:3px 0}
+    .flow-line{gap:4px;margin:4px 0}
+    .flow-line .fs{padding:2px 7px;font-size:11px} .flow-line .fs span{font-size:10px}
+    .flow-line .fa{font-size:12px}
+    .pos-tbl td:first-child{width:50px}
+    ul{padding-left:14px} li{font-size:12px}
+    footer{font-size:10px}
   }
 </style>
 </head>
 <body>
 
-<!-- ============================================================ -->
 <header>
   <h1>Chimpan's <span>Logger</span> - Manual</h1>
 </header>
 
 <div class="wrap">
 
-
-<!-- ============================================================ -->
-<section id="overview">
+<!-- 1 -->
+<section>
 <details>
-  <summary><h2><span class="num">1.</span>概要・処理フロー</h2></summary>
-
-  <p>スマートフォンのメモ帳等で記録したポーカーハンドのテキストメモ（<code>.txt</code>）を読み込み、After Effects 用の <code>scenes.json</code> を自動生成するツールです。</p>
-
-  <div class="flow">
-    <div class="flow-step"><strong>memo.txt</strong><span>テキストメモ</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>poker_memo_converter.py</strong><span>Python 変換</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>scenes.json</strong><span>AE 用データ</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>poker_ae_builder.jsx</strong><span>After Effects</span></div>
+  <summary><h2><span class="num">1.</span>概要</h2></summary>
+  <p>このアプリは、ポーカーのハンド履歴をテキスト形式で記録するロガーです。ブラウザだけで動作し、オフラインでも使えます。</p>
+  <p>ブラインドなどゲーム情報と、ヒーローのカードとコミュニティボードのカードに関しては専用のユーザーインターフェースを用意していますが、アクションに関しては手入力方式を採用しています。これは、専用UIでボタンを何度もタップするより、省略記法による手書きの方が実際には速いという設計思想に基づいています。</p>
+  <p>アプリ開発の経験のない審判が、手探りで作ったアプリですので、至らない点はあるかもしれませんが、フィードバックをいただければ随時改善したいと考えています。</p>
+  <div class="flow-line">
+    <div class="fs"><strong>情報入力</strong> <span>Hand / Blind / Cards</span></div>
+    <div class="fa">&rarr;</div>
+    <div class="fs"><strong>テンプレート生成</strong> <span>自動フォーマット</span></div>
+    <div class="fa">&rarr;</div>
+    <div class="fs"><strong>アクション追記</strong> <span>画面内で編集</span></div>
+    <div class="fa">&rarr;</div>
+    <div class="fs"><strong>Save / Copy</strong> <span>.txt 保存</span></div>
   </div>
-
-  <div class="note">
-    <strong>ポイント:</strong> メモは時系列順にアクションを書くだけ。ポジション名・ポット計算・イベント構築はすべて自動処理されます。
+  <div class="note warn">
+    <strong>補足:</strong> ショーダウンやリザルト等の項目は、本ツールが元々ポーカーのプレイシーン映像を構築するためのデータ入力ツールとして設計されているためです。ハンドログとしてのみ使用する場合は省略可能です。
   </div>
-
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="usage">
+<!-- 2 -->
+<section>
 <details>
   <summary><h2><span class="num">2.</span>使い方</h2></summary>
-
-
-  <h3>方法 A：ドラッグ＆ドロップ（推奨）</h3>
   <ol>
-    <li><code>.txt</code> ファイルを <code>memo2json.bat</code> のアイコンにドラッグ＆ドロップ</li>
-    <li>コマンドプロンプトが開き、変換が実行される</li>
-    <li>成功すると <strong>.txt と同じフォルダ</strong> に <code>hand##_scenes.json</code> が生成される</li>
+    <li>ブラウザでアプリを開く（PWAインストールも可）</li>
+    <li>Hand / Blind でハンド番号・ブラインド・Hero情報を入力</li>
+    <li>Cards でHeroカード・ボードカードを選択</li>
+    <li>Players でプレイヤーの着席状況を設定</li>
+    <li>「テンプレート生成」→ アクションを追記 → Copy / Save / Share</li>
   </ol>
-  <p>bat ファイルと .txt は別フォルダにあっても動作します。出力先は常に .txt 側のフォルダです。</p>
-
-  <h3>方法 B：コマンドライン</h3>
-<pre>
-<span class="cm"># 基本</span>
-python poker_memo_converter.py hand03_memo.txt
-
-<span class="cm"># 出力先を指定</span>
-python poker_memo_converter.py hand03_memo.txt -o output/
-</pre>
-
-  <h3>方法 C：Memo Builder で作成 &rarr; 保存 &rarr; 変換</h3>
-  <ol>
-    <li><code>memo_template.html</code> をブラウザで開く</li>
-    <li>ヘッダー情報・カードを入力し、テンプレート生成</li>
-    <li>テキストエリア内でアクションを追記・編集</li>
-    <li>「Save (.txt)」で保存、bat にドロップして変換</li>
-  </ol>
-
-  <div class="note warn">
-    <strong>前提条件:</strong> Python 3 がインストールされている必要があります。外部ライブラリは不要（標準ライブラリのみ使用）。
-  </div>
-  <div class="note">
-    <strong>Windows 互換性:</strong> bat ファイルは純粋 ASCII（改行 CRLF）で記述されており、どの Windows 環境でも動作します。Python 側は <code>sys.stdout.reconfigure(encoding='utf-8')</code> により文字化けしません。
-  </div>
-
+  <p style="color:var(--dim)">対応: iPhone / Android（Copy+Share） / Windows / Mac（Copy+Save） / PWA対応</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="memo-format">
+<!-- 3 -->
+<section>
 <details>
   <summary><h2><span class="num">3.</span>メモの書き方 — 全体構造</h2></summary>
-
-  <p>メモは上から順に以下のセクションで構成されます。</p>
-
 <pre>
-<span class="cm"># ① ヘッダー（メタ情報）</span>
-#03
-sb200 bb400 ante400
-hero 10 87200 9cJc
-8max
-video ファイル名.mp4
-ifb assets/interface/base.png
-ifi assets/interface/info.png
-
-<span class="cm"># ② プレイヤー一覧（UTG順）</span>
+<span class="cm"># ① ヘッダー</span>          <span class="cm"># ③ ストリート</span>
+#03                     <span class="sec">---pf</span>
+sb200 bb400 ante400     <span class="sec">---flop 6d 7s 3h</span>
+hero 10 87200 9cJc      <span class="sec">---turn 5s</span>
+8max                    <span class="sec">---river 2s</span>
+btn 9
+                        <span class="cm"># ④ ショーダウン（任意）</span>
+<span class="cm"># ② プレイヤー（UTG順）</span>  <span class="sec">---sd</span>
 2 プレイヤーA
-3 プレイヤーB
-...
-
-<span class="cm"># ③ ストリート（アクション）</span>
-<span class="sec">---pf</span>
-<span class="sec">---flop 6d 7s 3h</span>
-<span class="sec">---turn 5s</span>
-<span class="sec">---river 2s</span>
-
-<span class="cm"># ④ ショーダウン（任意）</span>
-<span class="sec">---sd</span>
-
-<span class="cm"># ⑤ リザルト</span>
-<span class="sec">---result</span>
+3 プレイヤーB            <span class="cm"># ⑤ リザルト</span>
+...                     <span class="sec">---result</span>
 </pre>
-
-  <div class="note">
-    <strong>ルール:</strong>
-    <ul>
-      <li>空行は無視されます</li>
-      <li>セクション区切りは <code>---</code> で始まる行です</li>
-      <li>行頭・行末の余白（スペース・タブ）は自動トリムされます</li>
-      <li><code>#</code> の後にスペース＋文字が続く行はコメントとして無視されます（例: <code># メモ書き</code>）。<br>ハンド番号の <code>#03</code> とは区別されます（<code>#</code> の直後が数字 → ハンド番号）</li>
-    </ul>
-  </div>
-
+  <p>空行は無視 / <code>---</code> でセクション区切り / <code># 文字</code> でコメント / <code>#03</code> はハンド番号</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="header">
+<!-- 4 -->
+<section>
 <details>
   <summary><h2><span class="num">4.</span>ヘッダー（メタ情報）</h2></summary>
-
-  <p>ファイル先頭〜最初のプレイヤー行までがヘッダーです。順序は自由です。</p>
-
   <table class="m-card">
-    <thead><tr><th>項目</th><th>書式</th><th>例</th><th></th></tr></thead>
+    <thead><tr><th>項目</th><th>書式</th><th>例</th></tr></thead>
     <tbody>
-    <tr><td>ハンド番号 <span class="tag required">必須</span></td><td><code>#番号</code></td><td><code>#03</code></td><td></td></tr>
-    <tr><td>ブラインド <span class="tag required">必須</span></td><td><code>sb金額 bb金額</code></td><td><code>sb200 bb400</code></td><td></td></tr>
-    <tr><td>アンティ <span class="tag optional">任意</span></td><td><code>ante金額</code>（sb行に追記も可）</td><td><code>ante400</code> / <code>sb200 bb400 ante400</code></td><td></td></tr>
-    <tr><td>ヒーロー <span class="tag required">必須</span></td><td><code>hero シート スタック カード</code></td><td><code>hero 10 87200 9cJc</code></td><td></td></tr>
-    <tr><td>テーブル人数 <span class="tag required">必須</span></td><td><code>数字max</code></td><td><code>8max</code></td><td></td></tr>
-    <tr><td>動画パス <span class="tag optional">任意</span></td><td><code>video パス</code></td><td><code>video hand03_base.mp4</code></td><td></td></tr>
-    <tr><td>IFベース <span class="tag optional">任意</span></td><td><code>ifb パス</code></td><td><code>ifb assets/interface/base.png</code></td><td></td></tr>
-    <tr><td>IF情報 <span class="tag optional">任意</span></td><td><code>ifi パス</code></td><td><code>ifi assets/interface/info.png</code></td><td></td></tr>
+    <tr><td>ハンド番号 <span class="tag required">必須</span></td><td><code>#番号</code></td><td><code>#03</code></td></tr>
+    <tr><td>ブラインド <span class="tag required">必須</span></td><td><code>sb金額 bb金額</code></td><td><code>sb200 bb400</code></td></tr>
+    <tr><td>アンティ <span class="tag optional">任意</span></td><td><code>ante金額</code>（sb行に追記可）</td><td><code>sb200 bb400 ante400</code></td></tr>
+    <tr><td>ヒーロー <span class="tag required">必須</span></td><td><code>hero シート スタック カード</code></td><td><code>hero 10 87200 9cJc</code></td></tr>
+    <tr><td>テーブル人数 <span class="tag required">必須</span></td><td><code>数字max</code></td><td><code>8max</code></td></tr>
+    <tr><td>BTN席 <span class="tag required">必須</span></td><td><code>btn シート番号</code></td><td><code>btn 9</code></td></tr>
     </tbody>
   </table>
-
-  <div class="note">
-    <strong>ヒーローのカード:</strong> <code>9cJc</code> のように繋げても、<code>9c Jc</code> のようにスペースで区切っても認識されます。10を含む場合（例: <code>10hAs</code>）も対応しています。
-  </div>
-
+  <p style="color:var(--dim)">カード: <code>9cJc</code> / <code>9c Jc</code> どちらも可。<code>10hAs</code> も対応。</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="players">
+<!-- 5 -->
+<section>
 <details>
   <summary><h2><span class="num">5.</span>プレイヤー一覧</h2></summary>
-
-  <p>ヘッダーの後、<code>---pf</code> の前に記述します。<strong>UTG から時計回り順に</strong>記載してください。</p>
-
+  <p><code>---pf</code> の前に <strong>UTG から時計回り順</strong>で記載。シート番号は実際の座席番号（1〜10、欠番OK）。</p>
 <pre>
-<span class="cm"># シート番号 プレイヤー名</span>
-<span class="val">2</span> プレイヤーA        <span class="cm">← UTG（1番目に書いた人）</span>
-<span class="val">3</span> プレイヤーB        <span class="cm">← +1（2番目）</span>
-<span class="val">4</span> プレイヤーC        <span class="cm">← LJ（3番目）</span>
-<span class="val">6</span> 白Tニキ           <span class="cm">← HJ（4番目）</span>
-<span class="val">8</span> プレイヤーD        <span class="cm">← CO（5番目）</span>
-<span class="val">9</span> プレイヤーE        <span class="cm">← BTN（6番目）</span>
-<span class="val">10</span> チンパン          <span class="cm">← SB（7番目）</span>
-<span class="val">1</span> プレイヤーF        <span class="cm">← BB（8番目）</span>
+<span class="val">2</span> プレイヤーA  <span class="cm">← UTG</span>    <span class="val">9</span> プレイヤーE  <span class="cm">← BTN</span>
+<span class="val">3</span> プレイヤーB  <span class="cm">← +1</span>     <span class="val">10</span> チンパン    <span class="cm">← SB</span>
+<span class="val">6</span> 白Tニキ     <span class="cm">← LJ</span>     <span class="val">1</span> プレイヤーF  <span class="cm">← BB</span>
+<span class="val">8</span> プレイヤーD  <span class="cm">← CO</span>
 </pre>
-
-  <div class="note">
-    <strong>重要:</strong>
-    <ul>
-      <li>シート番号は卓上の実際の座席番号（1〜10）</li>
-      <li>ヒーローも必ずプレイヤー一覧に含めてください</li>
-      <li>ポジション名は入力不要 — <code>Nmax</code> と並び順から自動で割り当てられます</li>
-      <li>シート番号が連番でなくても問題ありません（欠番OK）</li>
-    </ul>
-  </div>
-
+  <p style="color:var(--dim)">ヒーローも一覧に含める。ポジション名は Nmax + 並び順から自動割り当て。</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="positions">
+<!-- 6 -->
+<section>
 <details>
   <summary><h2><span class="num">6.</span>ポジション自動割り当て</h2></summary>
-
-  <p><code>Nmax</code> で指定した人数のポジションテーブルが選択され、UTG から順に割り当てられます。</p>
-
-  <div class="pos-grid">
-    <div class="pos-card"><div class="label">10max</div><div class="seats">BTN SB BB UTG +1 MP1 MP2 LJ HJ CO</div></div>
-    <div class="pos-card"><div class="label">9max</div><div class="seats">BTN SB BB UTG +1 MP LJ HJ CO</div></div>
-    <div class="pos-card"><div class="label">8max</div><div class="seats">BTN SB BB UTG +1 LJ HJ CO</div></div>
-    <div class="pos-card"><div class="label">7max</div><div class="seats">BTN SB BB UTG +1 HJ CO</div></div>
-    <div class="pos-card"><div class="label">6max</div><div class="seats">BTN SB BB UTG +1 CO</div></div>
-    <div class="pos-card"><div class="label">5max</div><div class="seats">BTN SB BB UTG CO</div></div>
-    <div class="pos-card"><div class="label">4max</div><div class="seats">BTN SB BB UTG</div></div>
-    <div class="pos-card"><div class="label">3max</div><div class="seats">BTN SB BB</div></div>
-    <div class="pos-card"><div class="label">2max</div><div class="seats">BTN BB</div></div>
-  </div>
-
-  <p>プレイヤー一覧は UTG を起点にローテーションして割り当てられます。</p>
-
-  <div class="note">
-    <strong>例（8max）:</strong> テーブルには UTG +1 LJ HJ CO BTN SB BB の8ポジション。一覧の1人目 → UTG、2人目 → +1 … 8人目 → BB と順番に対応します。
-  </div>
-
+  <table class="pos-tbl">
+    <tr><td>10max</td><td>BTN SB BB UTG +1 MP1 MP2 LJ HJ CO</td></tr>
+    <tr><td>9max</td><td>BTN SB BB UTG +1 MP LJ HJ CO</td></tr>
+    <tr><td>8max</td><td>BTN SB BB UTG +1 LJ HJ CO</td></tr>
+    <tr><td>7max</td><td>BTN SB BB UTG +1 HJ CO</td></tr>
+    <tr><td>6max</td><td>BTN SB BB UTG +1 CO</td></tr>
+    <tr><td>5max</td><td>BTN SB BB UTG CO</td></tr>
+    <tr><td>4max</td><td>BTN SB BB UTG</td></tr>
+    <tr><td>3max</td><td>BTN SB BB</td></tr>
+    <tr><td>2max</td><td>BTN BB</td></tr>
+  </table>
+  <p style="color:var(--dim)">一覧の1人目→UTG、2人目→+1 … と順番に対応。</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="actions">
+<!-- 7 -->
+<section>
 <details>
   <summary><h2><span class="num">7.</span>アクション省略記法</h2></summary>
-
-
-  <table class="m-card">
-    <thead><tr><th>記法</th><th>アクション</th><th>金額</th><th>例</th></tr></thead>
-    <tbody>
-    <tr><td><code>f</code> &rarr; fold</td><td>金額不要</td><td><code>3 f</code></td><td></td></tr>
-    <tr><td><code>x</code> &rarr; check</td><td>金額不要</td><td><code>10 x</code></td><td></td></tr>
-    <tr><td><code>c金額</code> &rarr; call</td><td>金額 <span class="tag required">必須</span></td><td><code>6 c2000</code></td><td></td></tr>
-    <tr><td><code>b金額</code> &rarr; bet</td><td>金額 <span class="tag required">必須</span></td><td><code>7 b3500</code></td><td></td></tr>
-    <tr><td><code>r金額</code> &rarr; raise</td><td>金額 <span class="tag required">必須</span></td><td><code>3 r8000</code></td><td></td></tr>
-    <tr><td><code>ai金額</code> &rarr; allin</td><td>金額 <span class="tag required">必須</span></td><td><code>10 ai24300</code></td><td></td></tr>
-    <tr><td><code>str金額</code> &rarr; straddle</td><td>金額 <span class="tag required">必須</span></td><td><code>4 str800</code></td><td></td></tr>
-    </tbody>
+  <table>
+    <tr><th>記法</th><th>意味</th><th>金額</th><th>例</th></tr>
+    <tr><td><code>f</code></td><td>fold</td><td>不要</td><td><code>3 f</code></td></tr>
+    <tr><td><code>x</code></td><td>check</td><td>不要</td><td><code>10 x</code></td></tr>
+    <tr><td><code>c</code></td><td>call</td><td><span class="tag required">必須</span></td><td><code>6 c2000</code></td></tr>
+    <tr><td><code>b</code></td><td>bet</td><td><span class="tag required">必須</span></td><td><code>7 b3500</code></td></tr>
+    <tr><td><code>r</code></td><td>raise</td><td><span class="tag required">必須</span></td><td><code>3 r8000</code></td></tr>
+    <tr><td><code>ai</code></td><td>allin</td><td><span class="tag required">必須</span></td><td><code>10 ai24300</code></td></tr>
+    <tr><td><code>str</code></td><td>straddle</td><td><span class="tag required">必須</span></td><td><code>4 str800</code></td></tr>
   </table>
-
-  <p>各行は <strong><code>シート番号 アクション</code></strong> の形式で、発生順（時系列順）に記述します。</p>
-
-  <div class="note warn">
-    <strong>金額に注意:</strong> <code>c</code> <code>b</code> <code>r</code> <code>ai</code> <code>str</code> には金額が必須です。金額なしはバリデーションエラーになります。<code>f</code> と <code>x</code> には金額は不要です。
-  </div>
-
+  <p><code>シート番号 アクション</code> の形式で、発生順に記述。</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="streets">
+<!-- 8 -->
+<section>
 <details>
   <summary><h2><span class="num">8.</span>ストリート（pf / flop / turn / river）</h2></summary>
-
-  <p>各ストリートは <code>---</code> で始まるセクション区切りで開始します。</p>
-
-  <table class="m-card">
-    <thead><tr><th>セクション</th><th>書式</th><th>説明</th></tr></thead>
-    <tbody>
-    <tr><td>プリフロップ</td><td><code>---pf</code></td><td>ボードカードなし</td></tr>
-    <tr><td>フロップ</td><td><code>---flop カード1 カード2 カード3</code></td><td>3枚</td></tr>
+  <table>
+    <tr><th>セクション</th><th>書式</th><th>ボード</th></tr>
+    <tr><td>プリフロップ</td><td><code>---pf</code></td><td>なし</td></tr>
+    <tr><td>フロップ</td><td><code>---flop カード×3</code></td><td>3枚</td></tr>
     <tr><td>ターン</td><td><code>---turn カード</code></td><td>1枚</td></tr>
     <tr><td>リバー</td><td><code>---river カード</code></td><td>1枚</td></tr>
-    </tbody>
   </table>
-
 <pre>
-<span class="sec">---pf</span>
-8 f
-9 c300
-4 r1500
-10 c1500
-
+<span class="sec">---pf</span>               <span class="sec">---turn 5s</span>
+8 f                   10 x
+9 c300                4 b8000
+4 r1500               10 r20000
+10 c1500              4 ai45000
+                      10 c45000
 <span class="sec">---flop 6d 7s 3h</span>
-10 x
-4 b3500
+10 x                  <span class="sec">---river 2s</span>
+4 b3500               <span class="cm">（オールイン済み→空でOK）</span>
 10 c3500
-
-<span class="sec">---turn 5s</span>
-10 x
-4 b8000
-10 r20000
-4 ai45000
-10 c45000
-
-<span class="sec">---river 2s</span>
-<span class="cm">（アクションなし＝オールイン済みの場合は空でOK）</span>
 </pre>
-
-  <div class="note">
-    <strong>途中で終了した場合:</strong> フロップで全員フォールドした場合はターン以降のセクションを書く必要はありません。存在するストリートだけ記述してください。
-  </div>
-
+  <p style="color:var(--dim)">途中で終了した場合、後続ストリートは省略可。</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="showdown">
+<!-- 9 -->
+<section>
 <details>
   <summary><h2><span class="num">9.</span>ショーダウン &amp; リザルト</h2></summary>
-
-
-  <h3>ショーダウン <code>---sd</code></h3>
-  <p>最終ストリートの後、カードを見せた（またはマックした）プレイヤーを記載します。</p>
-
-  <table class="m-card">
-    <thead><tr><th>書式</th><th>意味</th><th>例</th></tr></thead>
-    <tbody>
-    <tr><td><code>シート カード1 カード2</code></td><td>ハンドを公開</td><td><code>7 Ah 7h</code></td></tr>
-    <tr><td><code>シート show</code></td><td>hero公開（カード自動取得）</td><td><code>10 show</code></td></tr>
-    <tr><td><code>シート muck</code></td><td>カードを伏せる</td><td><code>2 muck</code></td></tr>
-    </tbody>
+  <h3>ショーダウン <code>---sd</code> <span class="tag optional">任意</span></h3>
+  <table>
+    <tr><th>書式</th><th>意味</th><th>例</th></tr>
+    <tr><td><code>シート カード1 カード2</code></td><td>ハンド公開</td><td><code>7 Ah 7h</code></td></tr>
+    <tr><td><code>シート show</code></td><td>hero公開</td><td><code>10 show</code></td></tr>
+    <tr><td><code>シート muck</code></td><td>伏せる</td><td><code>2 muck</code></td></tr>
   </table>
-
-  <div class="note">
-    <strong>ショーダウンタイミングの自動判定:</strong><br>
-    &bull; カードを公開したプレイヤーが <strong>2人以上</strong> &rarr; <code>river</code> タイミング<br>
-    &bull; カードを公開したプレイヤーが <strong>1人</strong> &rarr; <code>result</code> タイミング
-  </div>
-
   <h3>リザルト <code>---result</code></h3>
-  <p>勝者を記載します。</p>
-
-  <table class="m-card">
-    <thead><tr><th>書式</th><th>意味</th><th>例</th></tr></thead>
-    <tbody>
-    <tr><td><code>シート win</code></td><td>単独勝利</td><td><code>10 win</code></td></tr>
-    <tr><td><code>シート chop</code>（複数行）</td><td>引き分け</td><td><code>4 chop</code> / <code>7 chop</code></td></tr>
-    </tbody>
+  <table>
+    <tr><th>書式</th><th>意味</th><th>例</th></tr>
+    <tr><td><code>シート win</code></td><td>単独勝利（1人のみ）</td><td><code>10 win</code></td></tr>
+    <tr><td><code>シート chop</code></td><td>引き分け（複数行）</td><td><code>4 chop</code></td></tr>
   </table>
-
-  <div class="note warn">
-    <strong>注意:</strong>
-    <ul>
-      <li><code>win</code> は1人だけ指定可能です（複数人はエラー）</li>
-      <li>引き分けの場合は全員に <code>chop</code> を使用してください</li>
-      <li><code>win</code> と <code>chop</code> の混在はエラーになります</li>
-      <li>フォールド済みのプレイヤーを勝者に指定するとエラーになります</li>
-    </ul>
-  </div>
-
+  <p style="color:var(--dim)">win複数指定不可 / win+chop混在不可 / フォールド済み勝者不可</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="cards">
+<!-- 10 -->
+<section>
 <details>
-  <summary><h2><span class="num">10.</span>カード表記ルール</h2></summary>
-
-
-  <table class="m-simple">
-    <tr><th>ランク</th><th>表記</th></tr>
-    <tr><td>2〜9</td><td><code>2</code> <code>3</code> <code>4</code> <code>5</code> <code>6</code> <code>7</code> <code>8</code> <code>9</code></td></tr>
-    <tr><td>10</td><td><code>T</code> または <code>10</code></td></tr>
-    <tr><td>絵札・エース</td><td><code>J</code> <code>Q</code> <code>K</code> <code>A</code></td></tr>
-  </table>
-
-  <table class="m-simple">
-    <tr><th>スート</th><th>表記</th></tr>
-    <tr><td>スペード</td><td><code>s</code></td></tr>
-    <tr><td>ハート</td><td><code>h</code></td></tr>
-    <tr><td>ダイヤ</td><td><code>d</code></td></tr>
-    <tr><td>クラブ</td><td><code>c</code></td></tr>
-  </table>
-
-  <p><strong>組み合わせ例:</strong> <code>Ah</code>（エースのハート）、<code>10c</code>（10のクラブ）、<code>Ts</code>（10のスペード）、<code>2d</code>（2のダイヤ）</p>
-
-  <div class="note">
-    <strong>大文字・小文字:</strong> ランクは大文字推奨（<code>A</code> <code>K</code> <code>Q</code> <code>J</code> <code>T</code>）、スートは小文字推奨（<code>s</code> <code>h</code> <code>d</code> <code>c</code>）ですが、混在しても認識されます。
-  </div>
-
+  <summary><h2><span class="num">10.</span>カード表記</h2></summary>
+  <p><strong>ランク:</strong> <code>2</code>〜<code>9</code> / <code>T</code>or<code>10</code> / <code>J</code> <code>Q</code> <code>K</code> <code>A</code> &nbsp; <strong>スート:</strong> <code>s</code>=♠ <code>h</code>=♥ <code>d</code>=♦ <code>c</code>=♣</p>
+  <p>例: <code>Ah</code> <code>10c</code> <code>Ts</code> <code>2d</code> &mdash; 大文字小文字混在OK</p>
 </details>
 </section>
 
-
-<!-- ============================================================ -->
-<section id="validation">
+<!-- 11 -->
+<section>
 <details>
-  <summary><h2><span class="num">11.</span>バリデーション（自動検閲）</h2></summary>
-
-  <p>変換実行時に自動でメモの整合性がチェックされます。</p>
-
-  <h3>エラー（致命的） — 変換中止</h3>
-  <table class="m-simple">
-    <tr><th>チェック内容</th><th>説明</th></tr>
-    <tr><td>必須項目の欠落</td><td>ハンド番号 / SB / BB / hero / Nmax / プレイヤー2人以上 / ヒーローカード</td></tr>
-    <tr><td>ヒーローがプレイヤー一覧にいない</td><td>hero のシート番号が一覧に含まれているか</td></tr>
-    <tr><td>不正なカード表記</td><td>ランク・スートの組み合わせが正しいか</td></tr>
-    <tr><td>カード重複</td><td>全カード（hero / board / showdown）の中に同じカードがないか</td></tr>
-    <tr><td>フロップ枚数</td><td>フロップのボードカードが3枚か</td></tr>
-    <tr><td>ストリート順序</td><td>ターンがあるのにフロップがない等</td></tr>
-    <tr><td>存在しないシート番号</td><td>アクション・ショーダウン・リザルトで指定されたシートが一覧にいるか</td></tr>
-    <tr><td>金額の欠落</td><td>call / bet / raise / allin / straddle に金額が指定されているか</td></tr>
-    <tr><td>プリフロップにアクションなし</td><td>---pf セクションが空</td></tr>
-    <tr><td>ショーダウンにフォールド済み</td><td>既にフォールドしたプレイヤーがショーダウンにいないか</td></tr>
-    <tr><td>リザルト不正</td><td>win/chop以外の結果、win複数指定、win+chop混在、フォールド済み勝者</td></tr>
-    <tr><td>リザルト欠落</td><td>---result セクション自体がない</td></tr>
-  </table>
-
-  <h3>警告（注意） — 変換は続行</h3>
-  <table class="m-simple">
-    <tr><th>チェック内容</th><th>説明</th></tr>
-    <tr><td>ヒーロースタック</td><td>0 または未設定</td></tr>
-    <tr><td>Nmax とプレイヤー数の不一致</td><td>例: 8max なのに 7 人</td></tr>
-    <tr><td>パス未設定</td><td>video / ifb / ifi が空</td></tr>
-    <tr><td>ボードありアクションなし</td><td>フロップ等にボードがあるのにアクションが記載されていない</td></tr>
-    <tr><td>chop が1人だけ</td><td>引き分けは通常2人以上</td></tr>
-    <tr><td>アクション順序不正</td><td>ストリート別の正しいアクション順序と異なる（プリフロップ: UTG→BB、ポストフロップ: SB→BTN）</td></tr>
-  </table>
-
-  <div class="note warn">
-    <strong>⚠ アクション順序の確認プロンプト</strong><br>
-    アクション順序に問題がある場合、変換時に「このまま続行しますか？ (y/N)」と確認が表示されます。<br>
-    意図的に通常と異なる順序で記載している場合は <code>y</code> で続行できます。
-  </div>
-
-  <h3>出力例</h3>
+  <summary><h2><span class="num">11.</span>記入例（フル）</h2></summary>
 <pre>
-  [hand03_memo.txt]
-  --- 警告 (1) ---
-  [!] 8max ですがプレイヤーが 7 人です
-  [OK] D:\...\hand03_scenes.json
-</pre>
-
-<pre>
-  [hand03_memo.txt]
-  --- エラー (2) ---
-  [X] ヒーローのカードが未設定です
-  [X] preflop: seat 99 はプレイヤー一覧にいません
-
-  [STOP] エラーがあるため変換を中止しました
-         メモを修正して再実行してください
-</pre>
-
-</details>
-</section>
-
-
-<!-- ============================================================ -->
-<section id="example">
-<details>
-  <summary><h2><span class="num">12.</span>記入例（フル）</h2></summary>
-
-  <p>リファレンスとして、全セクションを含む完全な記入例です。</p>
-
-<pre>
-<span class="cm"># ヘッダー</span>
 <span class="kw">#04</span>
 <span class="kw">sb200 bb400 ante400</span>
 <span class="kw">hero 10 87200 9cJc</span>
 <span class="kw">8max</span>
-<span class="kw">video</span> 1108_02_Dr.Poker_hand04_9cJc_base.mp4
-<span class="kw">ifb</span> assets/interface/interface_base_chip_x4_mini.png
-<span class="kw">ifi</span> assets/interface/interface_info_DrPoker_b.png
+<span class="kw">btn 9</span>
 
-<span class="cm"># プレイヤー一覧（UTG順）</span>
-<span class="val">2</span> プレイヤーA
-<span class="val">3</span> プレイヤーB
+<span class="val">2</span> プレイヤーA    <span class="val">8</span> プレイヤーC    <span class="val">10</span> チンパン
+<span class="val">3</span> プレイヤーB    <span class="val">9</span> プレイヤーD    <span class="val">1</span> プレイヤーE
 <span class="val">6</span> 白Tニキ
-<span class="val">8</span> プレイヤーC
-<span class="val">9</span> プレイヤーD
-<span class="val">10</span> チンパン
-<span class="val">1</span> プレイヤーE
 
-<span class="cm"># ストリート</span>
 <span class="sec">---pf</span>
-2 <span class="act">c400</span>
-3 <span class="act">r2000</span>
-6 <span class="act">c2000</span>
-9 <span class="act">c2000</span>
-10 <span class="act">c2000</span>
-1 <span class="act">c2000</span>
-2 <span class="act">c2000</span>
+2 <span class="act">c400</span>   3 <span class="act">r2000</span>  6 <span class="act">c2000</span>  9 <span class="act">c2000</span>  10 <span class="act">c2000</span>  1 <span class="act">c2000</span>  2 <span class="act">c2000</span>
 
 <span class="sec">---flop 3h Jd 8s</span>
-10 <span class="act">x</span>
-1 <span class="act">x</span>
-2 <span class="act">x</span>
-3 <span class="act">x</span>
-6 <span class="act">x</span>
-9 <span class="act">x</span>
+10 <span class="act">x</span>  1 <span class="act">x</span>  2 <span class="act">x</span>  3 <span class="act">x</span>  6 <span class="act">x</span>  9 <span class="act">x</span>
 
 <span class="sec">---turn 10h</span>
-10 <span class="act">b3500</span>
-1 <span class="act">f</span>
-2 <span class="act">r8000</span>
-3 <span class="act">f</span>
-6 <span class="act">f</span>
-9 <span class="act">c8000</span>
-10 <span class="act">c8000</span>
+10 <span class="act">b3500</span>  1 <span class="act">f</span>  2 <span class="act">r8000</span>  3 <span class="act">f</span>  6 <span class="act">f</span>  9 <span class="act">c8000</span>  10 <span class="act">c8000</span>
 
 <span class="sec">---river 6d</span>
-10 <span class="act">x</span>
-2 <span class="act">b20000</span>
-9 <span class="act">c20000</span>
-10 <span class="act">f</span>
+10 <span class="act">x</span>  2 <span class="act">b20000</span>  9 <span class="act">c20000</span>  10 <span class="act">f</span>
 
-<span class="cm"># ショーダウン</span>
 <span class="sec">---sd</span>
-2 muck
-9 muck
+2 muck   9 muck
 
-<span class="cm"># リザルト</span>
 <span class="sec">---result</span>
 9 win
 </pre>
-
-</details>
-</section>
-
-
-<!-- ============================================================ -->
-<section id="template">
-<details>
-  <summary><h2><span class="num">13.</span>Memo Builder（テンプレート生成ツール）</h2></summary>
-
-  <p><code>memo_template.html</code> をブラウザで開くと、タップ操作でメモのテンプレートを作成できます。iPhone / Android / Windows / Mac すべてで動作します（オフライン対応・依存なし）。</p>
-
-  <h3>機能一覧</h3>
-  <table class="m-simple">
-    <tr><th>機能</th><th>説明</th></tr>
-    <tr><td>ヘッダー入力</td><td>Hand番号, SB, BB, Ante, Seat, Stack, Nmax を1画面で入力</td></tr>
-    <tr><td>カードピッカー</td><td>ランクタップ &rarr; スートタップの2タップで選択。使用済みカードは全ピッカーで共有・自動グレーアウト</td></tr>
-    <tr><td>プレイヤーリスト</td><td>席番号と名前を入力。行の追加・削除が可能</td></tr>
-    <tr><td>ボードカード</td><td>Flop(3枚) / Turn(1枚) / River(1枚) をタップで選択（任意）</td></tr>
-    <tr><td>パス設定</td><td>video / ifb / ifi を任意入力（折りたたみ式）</td></tr>
-    <tr><td>テンプレート生成</td><td>入力内容からメモテキストを自動生成</td></tr>
-    <tr><td>編集</td><td>生成後のテキストエリアは編集可能。アクションをその場で追記できる</td></tr>
-    <tr><td>出力</td><td>Copy（クリップボード）/ Save (.txt) / Share（モバイル共有API）</td></tr>
-  </table>
-
-  <h3>基本フロー</h3>
-  <div class="flow">
-    <div class="flow-step"><strong>memo_template.html</strong><span>情報入力</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>テンプレート生成</strong><span>テキスト出力</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>アクション追記</strong><span>画面内で編集</span></div>
-    <div class="flow-arrow">&rarr;</div>
-    <div class="flow-step"><strong>Save / Copy</strong><span>.txt保存</span></div>
-  </div>
-
-  <div class="note">
-    <strong>対応環境:</strong>
-    <ul>
-      <li><strong>iPhone / Android</strong> &mdash; Copy + Share ボタン（共有API）</li>
-      <li><strong>Windows / Mac</strong> &mdash; Copy + Save (.txt) ボタン（Blobダウンロード）</li>
-      <li><code>file://</code> プロトコルでも動作（ダブルクリックで開くだけでOK）</li>
-    </ul>
-  </div>
-
-</details>
-</section>
-
-
-<!-- ============================================================ -->
-<section id="files">
-<details>
-  <summary><h2><span class="num">14.</span>ファイル構成</h2></summary>
-
-  <table class="m-simple">
-    <tr><th>ファイル</th><th>役割</th></tr>
-    <tr><td><code>poker_memo_converter.py</code></td><td>メイン変換スクリプト（Python 3）</td></tr>
-    <tr><td><code>memo2json.bat</code></td><td>ドラッグ＆ドロップ用ランチャー（ASCII / CRLF）</td></tr>
-    <tr><td><code>memo_template.html</code></td><td>Memo Builder（テンプレート生成ツール）</td></tr>
-    <tr><td><code>manual.html</code></td><td>本マニュアル</td></tr>
-    <tr><td><code>spec.json</code></td><td>システム仕様書（JSON形式）</td></tr>
-    <tr><td><code>*.txt</code></td><td>入力メモファイル（ユーザー作成）</td></tr>
-    <tr><td><code>hand##_scenes.json</code></td><td>出力ファイル（自動生成）</td></tr>
-  </table>
-
 </details>
 </section>
 
 </div>
 
-<footer>
-  Poker Memo Converter Manual
-</footer>
+<footer>Poker Hand Logger Manual</footer>
 
-
+<div id="__heightSentinel" style="height:0;clear:both"></div>
+<script>
+(function(){
+  if(window.self===window.top) return;
+  var sentinel=document.getElementById('__heightSentinel');
+  function reportHeight(){
+    var h=sentinel.offsetTop+20;
+    parent.postMessage({type:'manualHeight',h:h},'*');
+  }
+  document.querySelectorAll('details').forEach(function(d){
+    d.addEventListener('toggle',function(){
+      setTimeout(reportHeight,0);
+      setTimeout(reportHeight,50);
+      setTimeout(reportHeight,200);
+      setTimeout(reportHeight,500);
+    });
+  });
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){reportHeight()}).observe(document.body);
+  }
+  reportHeight();
+  setTimeout(reportHeight,100);
+  setTimeout(reportHeight,500);
+})();
+</script>
 
 </body>
 </html>

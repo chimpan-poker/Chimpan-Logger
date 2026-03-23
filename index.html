@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+<!--
+  Chimpan's Logger - Poker Hand Logger
+  (c) 2025 Chimpan. All rights reserved.
+
+  This app was handcrafted with love (and a lot of trial and error).
+  If you find this code useful or inspiring, that's great!
+  Please respect the effort behind it and don't redistribute it as your own.
+  Feel free to reach out if you'd like to collaborate or have feedback.
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -36,8 +45,8 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 .row input[type="number"]{-moz-appearance:textfield}
 .row input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
 .row select{background:var(--card);color:var(--text)}
-.hero-save-btn{flex:0 0 auto;background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:800;cursor:pointer;line-height:1.2;color:var(--yellow);letter-spacing:.04em}
-.hero-save-btn:active{background:rgba(240,216,48,.2)}
+.sec-save-btn{background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:800;cursor:pointer;line-height:1.2;color:var(--yellow);letter-spacing:.04em;margin-left:6px;vertical-align:middle}
+.sec-save-btn:active{background:rgba(240,216,48,.2)}
 
 /* compact grid rows */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:2px 0}
@@ -113,10 +122,21 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 .output-text:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 2px rgba(240,216,48,.25)}
 .copy-row{display:flex;gap:5px;margin-top:4px}
 .copy-row{justify-content:center}
-.copy-btn,.save-btn,.share-btn{flex:0 0 calc(33% - 3px);padding:8px;border:none;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#a09018,#b8a820,#a09018);color:#fff}
-.copy-btn{}
-.share-btn{}
-.copy-btn:active,.save-btn:active,.share-btn:active{transform:scale(.97)}
+.action-btn{flex:1;padding:8px;border:none;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#a09018,#b8a820,#a09018);color:#fff}
+.action-btn:active{transform:scale(.97)}
+.action-btn.secondary{background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:2px solid rgba(240,216,48,.25);color:var(--yellow)}
+.hands-badge{font-size:11px;background:rgba(240,216,48,.3);color:var(--yellow);border-radius:10px;padding:1px 7px;margin-left:4px;font-weight:800}
+.hands-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin:6px 0;display:none}
+.hands-panel.show{display:block}
+.hand-item{background:var(--bg);border:1px solid var(--border);border-radius:6px;margin:4px 0;overflow:hidden}
+.hand-item-header{display:flex;align-items:center;padding:6px 8px;cursor:pointer;gap:6px}
+.hand-item-header .hand-title{flex:1;font-size:12px;font-weight:700;color:var(--yellow)}
+.hand-item-header .hand-summary{flex:2;font-size:11px;color:var(--dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.hand-item-header .hand-del{background:none;border:1px solid var(--border);border-radius:4px;color:var(--coral);font-size:11px;font-weight:800;cursor:pointer;padding:1px 6px;line-height:1.2}
+.hand-item-header .hand-del:active{background:rgba(231,76,60,.2)}
+.hand-item-body{display:none;padding:4px 8px 8px;border-top:1px solid var(--border)}
+.hand-item-body pre{margin:0;font-size:12px;line-height:1.4;white-space:pre-wrap;word-break:break-all;color:var(--text);background:none;border:none;padding:0}
+.hand-item.open .hand-item-body{display:block}
 .toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#fff;color:#1a1a2e;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
 .toast.show{opacity:1}
 </style>
@@ -131,7 +151,7 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 
 <!-- ===== Hand / Blind / Hero 統合 ===== -->
 <div class="sec">
-  <div class="sec-title">Hand / Blind</div>
+  <div class="sec-title">Hand / Blind <button class="sec-save-btn" onclick="saveAllDefaults(this)" title="Blind/Hero/Stackのデフォルトを一括保存">SAVE</button></div>
   <input type="hidden" id="heroSeat" value="1">
   <div class="g5b-labels">
     <span>Hand #</span><span>SB</span><span>BB</span><span>Ante</span><span></span>
@@ -144,7 +164,7 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
     <div class="row"><select id="blindPreset" onchange="applyBlindPreset()"><option value="">---</option><option value="1/2">1/2</option><option value="1/3">1/3</option><option value="2/3">2/3</option><option value="2/5">2/5</option><option value="5/5">5/5</option><option value="10/20">10/20</option><option value="25/50">25/50</option><option value="50/100" selected>50/100</option><option value="100/200">100/200</option><option value="200/300">200/300</option><option value="200/400">200/400</option><option value="200/500">200/500</option><option value="300/500">300/500</option><option value="400/800">400/800</option><option value="500/1000">500/1000</option></select></div>
   </div>
   <div class="g2">
-    <div class="row"><label>Hero</label><input type="text" id="heroName" value="チンパン" oninput="syncHeroName()"><button class="hero-save-btn" onclick="saveDefaultHero()" title="デフォルト名として保存">SAVE</button></div>
+    <div class="row"><label>Hero</label><input type="text" id="heroName" value="チンパン" oninput="syncHeroName()"></div>
     <div class="row"><label>Stack</label><input type="number" id="heroStack" value="50000" inputmode="numeric"></div>
   </div>
 </div>
@@ -177,7 +197,7 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 
 <!-- ===== プレイヤー一覧 ===== -->
 <div class="sec">
-  <div class="sec-title">Players <span class="utg-hint">D=BTN / 番号=Hero</span></div>
+  <div class="sec-title">Players <span class="utg-hint">D=BTN / 番号=Hero</span> <button class="sec-save-btn" onclick="saveDefaultPlayers(this)" title="デフォルト人数を保存">SAVE</button></div>
   <div id="playerList"></div>
 </div>
 
@@ -189,16 +209,32 @@ header h1{font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-
 <div class="output-wrap" id="outputWrap">
   <div class="output-label">&#9998; 編集可 &mdash; アクションを追記してください</div>
   <textarea class="output-text" id="outputText"></textarea>
-  <div class="copy-row" id="actionRow"></div>
+  <div class="copy-row">
+    <button class="action-btn" onclick="saveToHandList()">Save</button>
+    <button class="action-btn secondary" onclick="discardOutput()">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== ハンドリスト ===== -->
+<button class="gen-btn" id="handsToggle" onclick="toggleHandsPanel()" style="background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:2px solid rgba(240,216,48,.25);font-size:13px;padding:8px 0;letter-spacing:.05em;margin-top:8px">Hands <span class="hands-badge" id="handsBadge">0</span></button>
+<div class="hands-panel" id="handsPanel">
+  <div id="handsList"></div>
+  <div class="copy-row" style="margin-top:6px">
+    <button class="action-btn" onclick="exportAllHands()">Export (.txt)</button>
+    <button class="action-btn secondary" onclick="clearAllHands()">Clear All</button>
+  </div>
 </div>
 
 </div>
 
-<!-- ===== マニュアル ===== -->
+<!-- ===== マニュアル & フィードバック ===== -->
 <div class="wrap" style="margin-top:12px">
-<button class="gen-btn" id="manualToggle" onclick="toggleManual()" style="background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:2px solid rgba(240,216,48,.25);font-size:13px;padding:8px 0;letter-spacing:.05em">Manual</button>
+<div style="display:flex;gap:6px">
+<button class="gen-btn" id="manualToggle" onclick="toggleManual()" style="flex:1;background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:2px solid rgba(240,216,48,.25);font-size:13px;padding:8px 0;letter-spacing:.05em">Manual</button>
+<button class="gen-btn" onclick="openFeedback()" style="flex:1;background:linear-gradient(to bottom,#3a3a5c,#2a2a48);border:2px solid rgba(240,216,48,.25);font-size:13px;padding:8px 0;letter-spacing:.05em">Feedback</button>
+</div>
 <div id="manualWrap" style="display:none;margin-top:6px;border:2px solid rgba(240,216,48,.15);border-radius:7px;overflow:hidden">
-<iframe id="manualFrame" src="about:blank" style="width:100%;border:none;background:#1a1a2e;height:0" scrolling="no"></iframe>
+<iframe id="manualFrame" src="about:blank" style="width:100%;border:none;background:#1a1a2e;height:0;overflow:hidden" scrolling="no"></iframe>
 </div>
 </div>
 
@@ -356,7 +392,7 @@ function renderSlotRow(target, prefix, count) {
 }
 
 // ---- player list (席順固定) ----
-var removedSeats = new Set();
+var removedSeats = new Set([10]);
 var btnSeat = 1;
 
 function buildPlayerList() {
@@ -365,6 +401,7 @@ function buildPlayerList() {
   for (var i = 1; i <= 10; i++) {
     var div = document.createElement('div');
     div.className = 'pl-row';
+    if (removedSeats.has(i)) div.className += ' inactive';
     div.id = 'seat-' + i;
     div.dataset.seat = i;
     div.innerHTML = '<span class="d-tap" onclick="setBtn(' + i + ')">D</span>' +
@@ -559,9 +596,10 @@ function generate() {
   document.getElementById('outputWrap').scrollIntoView({behavior:'smooth'});
   setTimeout(function(){ ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0; }, 300);
 
+  // 生成時のHand#を記憶（Cancel時に復元用）
+  window._lastGeneratedHn = parseInt(document.getElementById('handNum').value || '1');
   // 次ハンド準備: Hand#+1, カードクリア
-  var nextHn = parseInt(document.getElementById('handNum').value || '1') + 1;
-  document.getElementById('handNum').value = nextHn;
+  document.getElementById('handNum').value = window._lastGeneratedHn + 1;
   cardData.heroCards.cards.forEach(function(c){ allUsed.delete(c.toUpperCase()); });
   cardData.boardCards.cards.forEach(function(c){ allUsed.delete(c.toUpperCase()); });
   cardData.heroCards.cards = [];
@@ -574,44 +612,117 @@ function generate() {
   picker.querySelectorAll('.rank-btn').forEach(function(b){b.classList.remove('sel')});
 }
 
-function copyText() {
-  var text = document.getElementById('outputText').value;
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(function(){showToast('Copied')})['catch'](function(){fallbackCopy()});
-  } else {
-    fallbackCopy();
-  }
+// ---- hand list management ----
+var handList = [];
+function loadHandList(){
+  try{var d=sessionStorage.getItem('pokerHandList');if(d) handList=JSON.parse(d)}catch(e){}
+  updateHandsBadge();
 }
-function fallbackCopy() {
-  var ta = document.getElementById('outputText');
-  ta.select();
-  ta.setSelectionRange(0, 99999);
-  try { document.execCommand('copy'); showToast('Copied'); }
-  catch(e) { showToast('Failed'); }
+function persistHandList(){
+  sessionStorage.setItem('pokerHandList',JSON.stringify(handList));
+  updateHandsBadge();
+}
+function updateHandsBadge(){
+  document.getElementById('handsBadge').textContent=handList.length;
 }
 
-function saveFile() {
-  var text = document.getElementById('outputText').value;
-  var hn = (document.getElementById('handNum').value || '1');
-  if (hn.length < 2) hn = '0' + hn;
-  var blob = new Blob([text.replace(/\n/g,'\r\n')], {type:'text/plain;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'hand' + hn + '_memo.txt';
+function saveToHandList(){
+  var text=document.getElementById('outputText').value.trim();
+  if(!text){showToast('Empty');return}
+  // extract hand number from first line
+  var m=text.match(/^#(\d+)/);
+  var label=m?'#'+(m[1].length<2?'0'+m[1]:m[1]):'#??';
+  handList.push({label:label,text:text});
+  persistHandList();
+  renderHandsList();
+  showToast('Saved: '+label);
+  // hide output, ready for next hand
+  document.getElementById('outputWrap').classList.remove('show');
+}
+
+var FEEDBACK_URL = 'https://forms.gle/XDw4C5kKdToUyaW5A';
+function openFeedback(){
+  if(!FEEDBACK_URL){showToast('Feedback URL未設定');return}
+  window.open(FEEDBACK_URL,'_blank');
+}
+
+function discardOutput(){
+  document.getElementById('outputWrap').classList.remove('show');
+  document.getElementById('outputText').value='';
+  if(window._lastGeneratedHn){
+    document.getElementById('handNum').value=window._lastGeneratedHn;
+    window._lastGeneratedHn=null;
+  }
+}
+
+function toggleHandsPanel(){
+  var p=document.getElementById('handsPanel');
+  if(p.classList.contains('show')){
+    p.classList.remove('show');
+  }else{
+    renderHandsList();
+    p.classList.add('show');
+  }
+}
+
+function renderHandsList(){
+  var el=document.getElementById('handsList');
+  if(!handList.length){el.innerHTML='<p style="color:var(--dim);font-size:12px;text-align:center;padding:8px 0">保存されたハンドはありません</p>';return}
+  var html='';
+  for(var i=0;i<handList.length;i++){
+    var h=handList[i];
+    var summary=h.text.split('\n').slice(0,3).join(' ').substring(0,60);
+    html+='<div class="hand-item" id="hi-'+i+'">';
+    html+='<div class="hand-item-header" onclick="toggleHandItem('+i+')">';
+    html+='<span class="hand-title">'+h.label+'</span>';
+    html+='<span class="hand-summary">'+escHtml(summary)+'</span>';
+    html+='<button class="hand-del" onclick="event.stopPropagation();deleteHand('+i+')">DEL</button>';
+    html+='</div>';
+    html+='<div class="hand-item-body"><pre>'+escHtml(h.text)+'</pre></div>';
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function toggleHandItem(i){
+  var el=document.getElementById('hi-'+i);
+  if(el) el.classList.toggle('open');
+}
+
+function deleteHand(i){
+  handList.splice(i,1);
+  persistHandList();
+  renderHandsList();
+  showToast('Deleted');
+}
+
+function clearAllHands(){
+  if(!handList.length) return;
+  if(!confirm('保存済みの全ハンド('+handList.length+'件)を削除しますか？')) return;
+  handList=[];
+  persistHandList();
+  renderHandsList();
+  showToast('Cleared');
+}
+
+function exportAllHands(){
+  if(!handList.length){showToast('No hands');return}
+  var parts=[];
+  for(var i=0;i<handList.length;i++) parts.push(handList[i].text);
+  var text=parts.join('\n\n========================================\n\n');
+  var now=new Date();
+  var ds=now.getFullYear()+('0'+(now.getMonth()+1)).slice(-2)+('0'+now.getDate()).slice(-2);
+  var blob=new Blob([text.replace(/\n/g,'\r\n')],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='hands_'+ds+'.txt';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
-  showToast('Saved');
-}
-
-function shareText() {
-  var text = document.getElementById('outputText').value;
-  if (navigator.share) {
-    navigator.share({title:'Poker Memo', text:text})['catch'](function(){});
-  } else {
-    copyText();
-  }
+  showToast('Exported: '+handList.length+' hands');
 }
 
 function showToast(msg) {
@@ -621,39 +732,46 @@ function showToast(msg) {
   setTimeout(function(){t.classList.remove('show')}, 1500);
 }
 
-// detect environment & build action buttons
-function setupActions() {
-  var row = document.getElementById('actionRow');
-  var isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
-  var canShare = !!navigator.share;
-  var html = '<button class="copy-btn" onclick="copyText()">Copy</button>';
-  if (isMobile && canShare) {
-    html += '<button class="share-btn" onclick="shareText()">Share</button>';
-  } else {
-    html += '<button class="save-btn" onclick="saveFile()">Save (.txt)</button>';
-  }
-  row.innerHTML = html;
-}
-
-function saveDefaultHero(){
-  var name=document.getElementById('heroName').value.trim();
-  if(!name){alert('名前を入力してください');return}
-  localStorage.setItem('pokerDefaultHero',name);
-  var btn=document.querySelector('.hero-save-btn');
+function saveAllDefaults(btn){
+  localStorage.setItem('pokerDefaultHero',document.getElementById('heroName').value.trim());
+  localStorage.setItem('pokerDefaultStack',document.getElementById('heroStack').value.trim());
+  var blind=document.getElementById('blindPreset').value;
+  if(blind) localStorage.setItem('pokerDefaultBlind',blind);
   btn.textContent='\u2705';setTimeout(function(){btn.textContent='SAVE'},800);
 }
-function loadDefaultHero(){
-  var saved=localStorage.getItem('pokerDefaultHero');
-  if(saved){document.getElementById('heroName').value=saved;syncHeroName()}
+function saveDefaultPlayers(btn){
+  var activeCount=10-removedSeats.size;
+  localStorage.setItem('pokerDefaultPlayerCount',String(activeCount));
+  btn.textContent='\u2705';setTimeout(function(){btn.textContent='SAVE'},800);
+}
+function loadDefaults(){
+  var hero=localStorage.getItem('pokerDefaultHero');
+  if(hero){document.getElementById('heroName').value=hero;syncHeroName()}
+  var stack=localStorage.getItem('pokerDefaultStack');
+  if(stack){document.getElementById('heroStack').value=stack}
+  var blind=localStorage.getItem('pokerDefaultBlind');
+  if(blind){
+    var sel=document.getElementById('blindPreset');
+    sel.value=blind;
+    applyBlindPreset();
+  }
+  var pc=localStorage.getItem('pokerDefaultPlayerCount');
+  if(pc){
+    var count=parseInt(pc);
+    if(count>=2&&count<=10){
+      removedSeats.clear();
+      for(var i=10;i>count;i--) removedSeats.add(i);
+    }
+  }
 }
 
 // ---- init ----
-loadDefaultHero();
+loadDefaults();
 buildPicker();
 renderAllSlots();
 buildPlayerList();
 highlightHeroSeat();
-setupActions();
+loadHandList();
 </script>
 <script>
 function toggleManual(){
@@ -666,24 +784,7 @@ function toggleManual(){
     if(f.src==='about:blank'||!f.src.includes('manual.html')){
       f.src='manual.html';
       f.onload=function(){
-        resizeManualFrame();
-        setTimeout(function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},50);
-        // Listen for accordion open/close inside iframe
-        try{
-          var doc=f.contentDocument;
-          doc.querySelectorAll('details').forEach(function(d){
-            d.addEventListener('toggle',function(){
-              var sum=d.querySelector('summary');
-              var beforeY=sum.getBoundingClientRect().top;
-              setTimeout(function(){
-                resizeManualFrame();
-                var afterY=sum.getBoundingClientRect().top;
-                var diff=afterY-beforeY;
-                if(diff!==0) window.scrollBy(0,diff);
-              },100);
-            });
-          });
-        }catch(e){}
+        setTimeout(function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},300);
       };
     }else{
       setTimeout(function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},50);
@@ -693,12 +794,21 @@ function toggleManual(){
     b.textContent='Manual';
   }
 }
-function resizeManualFrame(){
-  var f=document.getElementById('manualFrame');
-  try{
-    f.style.height=f.contentDocument.documentElement.scrollHeight+'px';
-  }catch(e){f.style.height='400px'}
-}
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='manualHeight'){
+    var f=document.getElementById('manualFrame');
+    var oldH=f.offsetHeight;
+    var newH=e.data.h;
+    if(oldH===newH) return;
+    var scrollY=window.scrollY;
+    var rect=f.getBoundingClientRect();
+    f.style.height=newH+'px';
+    // keep scroll position if iframe is above viewport
+    if(rect.top<0){
+      window.scrollTo(0,scrollY+(newH-oldH));
+    }
+  }
+});
 </script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
 </body>
